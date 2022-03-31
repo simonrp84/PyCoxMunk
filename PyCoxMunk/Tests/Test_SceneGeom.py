@@ -17,7 +17,7 @@
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Test the scene geometry module."""
 
-from PyCoxMunk.Utils.CM_SceneGeom import CMSceneGeom as Cm_sg
+from PyCoxMunk.src.CM_SceneGeom import CMSceneGeom as Cm_sg
 from mock import patch
 import numpy as np
 import unittest

@@ -15,4 +15,5 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
-"""Some constants used throughout the rest of the code."""
+
+from PyCoxMunk.src.CM_Main import PyCoxMunk

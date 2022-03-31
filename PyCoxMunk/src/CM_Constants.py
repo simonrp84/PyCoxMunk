@@ -16,6 +16,17 @@
 # You should have received a copy of the GNU General Public License along with
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Some constants used throughout the rest of the code."""
+import numpy as np
+
+dither_more = 1e-5
+
+chlconc = 0.18
+
+n_air = 1.00029
+
+zeisse_coef = np.array([[1.6753e-3, -1.66517e-4, 2.03068e-5],
+                        [-6.96112e-3, -55537e-3, 2.60686e-3],
+                        [2.86324e-3, 1.86059e-3, -4.69589e-4]])
 
 
 class WaterData:
@@ -30,7 +41,9 @@ class WaterData:
                  whitecap_refl,    # Reflectance of whitecaps
                  chl_a_coef,       # Chlorophyll-a absorption coefficient part
                  total_abs,        # Total water absorption
-                 total_backscat):  # Total water backscatter
+                 total_backscat,   # Total water backscatter
+                 chlabs=0,           # Chlorophyll-a absorption
+                 chlbsc=0):          # Chlorophyll-a backscatter
 
         # Check the chl-a coefficients are a 2-element list
         if type(chl_a_coef) is not list:
@@ -46,6 +59,8 @@ class WaterData:
         self.chl_a_coef = chl_a_coef
         self.total_abs = total_abs
         self.total_backscat = total_backscat
+        self.chlabs = chlabs
+        self.chlbsc = chlbsc
 
 
 # Approximate median chlorophyll - A concentration from GlobCOLOUR (mg / m3)
