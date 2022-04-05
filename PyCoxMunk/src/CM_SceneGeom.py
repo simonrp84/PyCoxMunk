@@ -17,11 +17,12 @@
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Class for the Scene geometry information."""
 
+from PyCoxMunk.src.CM_Utils import check_and_reshape, check_type
 import numpy as np
 import warnings
 
 
-def CMCalcAngles(inscn, refband):
+def cm_calcangles(inscn, refband):
     """Calculate satellite and solar angles from a given dataset.
     NOTE: This only works for geostationary satellites!
     Inputs:
@@ -45,9 +46,9 @@ def CMCalcAngles(inscn, refband):
         inscn['solar_azimuth_angle'].data = suna
         inscn['satellite_zenith_angle'].data = satz
         inscn['solar_zenith_angle'].data = sunz
-    except ValueError:
-        raise ValueError("Cannot retrieve solar and satellite angles, please compute manually and specify.")
     except KeyError:
+        raise KeyError("Input scene does not contain reference dataset, please check inputs.")
+    except ValueError:
         raise ValueError("Cannot retrieve solar and satellite angles, please compute manually and specify.")
     return inscn
 
@@ -81,43 +82,25 @@ class CMSceneGeom:
 
     """
 
-    @staticmethod
-    def _check_and_reshape(arr, good_shape):
-        """If array is single value then scale to match other arrays."""
-        if arr.shape == (1,):
-            arr = np.full(good_shape, arr[0])
-        return arr
-
-    @staticmethod
-    def _check_type(in_val, var_typ):
-        """Check that input variable is correct type.
-        All inputs should be numpy array or a float."""
-        if type(in_val) == float:
-            return np.array([in_val])
-        elif type(in_val) == np.ndarray:
-            return in_val
-        else:
-            raise TypeError(f'{var_typ} must be a single float or numpy array! Got: {type(in_val)}')
-
-
     def __init__(self, sza, saa, vza, vaa, lats, lons, raa=None,
                  zenith_min=0., zenith_max=85.,
                  azimuth_min=0., azimuth_max=360.,
                  relazi_min=0., relazi_max=180.,
                  lat_min=-90., lat_max=90.,
-                 lon_min=-180., lon_max=180.):
+                 lon_min=-180., lon_max=180.,
+                 check_raa=False, fix_angs=True):
         # Solar zenith angles
-        self.sza = self._check_type(sza, "Solar zenith angles")
+        self.sza = check_type(sza, "Solar zenith angles")
         # Solar azimuth angles
-        self.saa = self._check_type(saa, "Solar azimuth angles")
+        self.saa = check_type(saa, "Solar azimuth angles")
         # Viewing zenith angles
-        self.vza = self._check_type(vza, "Viewing zenith angles")
+        self.vza = check_type(vza, "Viewing zenith angles")
         # Viewing azimuth angles
-        self.vaa = self._check_type(vaa, "Viewing azimuth angles")
+        self.vaa = check_type(vaa, "Viewing azimuth angles")
         # Latitudes
-        self.lats = self._check_type(lats, "Latitudes")
+        self.lats = check_type(lats, "Latitudes")
         # Longitudes
-        self.lons = self._check_type(lons, "Longitudes")
+        self.lons = check_type(lons, "Longitudes")
 
         # Set some limits for the angles and geolocation
         self.zenith_min = zenith_min
@@ -139,15 +122,19 @@ class CMSceneGeom:
         self.check_array_shapes()
 
         # Run checks to ensure values are within bounds
-        self.check_angle_bounds(check_raa=False)
+        self.check_angle_bounds(check_raa=False, fix=fix_angs)
 
         # Relative azimuth angle (range: 0 -> 180)
         # Can be provided by user or calculated internally
         if raa is not None:
-            raa = self._check_type(raa, "Relative azimuth angles")
-            self.raa = self._check_and_reshape(raa, self.sza.shape)
+            raa = check_type(raa, "Relative azimuth angles")
+            self.raa = check_and_reshape(raa, self.sza.shape)
         else:
             self.raa = self.calc_relazi()
+
+        # Check again with RAA
+        if check_raa:
+            self.check_angle_bounds(check_raa=True, fix=fix_angs)
 
         # Compute additional parameters
         self.cos_sza = np.cos(np.deg2rad(self.sza))
@@ -186,11 +173,11 @@ class CMSceneGeom:
                 if not arr_shapes[i]:
                     good_shp = in_arr[i].shape
                     break
-            self.saa = self._check_and_reshape(self.saa, good_shp)
-            self.vza = self._check_and_reshape(self.vza, good_shp)
-            self.vaa = self._check_and_reshape(self.vaa, good_shp)
-            self.lats = self._check_and_reshape(self.lats, good_shp)
-            self.lons = self._check_and_reshape(self.lons, good_shp)
+            self.saa = check_and_reshape(self.saa, good_shp)
+            self.vza = check_and_reshape(self.vza, good_shp)
+            self.vaa = check_and_reshape(self.vaa, good_shp)
+            self.lats = check_and_reshape(self.lats, good_shp)
+            self.lons = check_and_reshape(self.lons, good_shp)
 
     def check_angle_bounds(self, fix=True, check_raa=True):
         """Ensure that zenith angles are in acceptable range.

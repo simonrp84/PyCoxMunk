@@ -17,6 +17,7 @@
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Class for the Scene wind and sea surface information."""
 
+from PyCoxMunk.src.CM_Utils import check_and_reshape, check_type
 from PyCoxMunk.src.CM_SceneGeom import CMSceneGeom
 from PyCoxMunk.src.CM_Constants import dither_more
 import numpy as np
@@ -52,24 +53,6 @@ class CMSharedWind:
 
         return ba
 
-    @staticmethod
-    def _check_and_reshape(arr, good_shape):
-        """If array is single value then scale to match other arrays."""
-        if arr.shape == (1,):
-            arr = np.full(good_shape, arr[0])
-        return arr
-
-    @staticmethod
-    def _check_type(in_val, var_typ):
-        """Check that input variable is correct type.
-        All inputs should be numpy array or a float."""
-        if type(in_val) == float:
-            return np.array([in_val])
-        elif type(in_val) == np.ndarray:
-            return in_val
-        else:
-            raise TypeError(var_typ + " must be a single float or numpy array!")
-
     def __init__(self,
                  scenegeom: CMSceneGeom,
                  u10,
@@ -83,12 +66,12 @@ class CMSharedWind:
           - Class containing calculated values.
         """
         # Wind speeds
-        self.u10 = self._check_type(u10, "U-direction 10m wind speed")
-        self.v10 = self._check_type(v10, "V-direction 10m wind speed")
+        self.u10 = check_type(u10, "U-direction 10m wind speed")
+        self.v10 = check_type(v10, "V-direction 10m wind speed")
 
         # Here we assume that the scene geometry already has correctly sized arrays
-        self.u10 = self._check_and_reshape(self.u10, scenegeom.sza.shape)
-        self.v10 = self._check_and_reshape(self.v10, scenegeom.sza.shape)
+        self.u10 = check_and_reshape(self.u10, scenegeom.sza.shape)
+        self.v10 = check_and_reshape(self.v10, scenegeom.sza.shape)
 
         # Calculate parameters
         # First 10m absolute wind speed
@@ -131,11 +114,11 @@ class CMSharedWind:
         self.dangle = scenegeom.cos_sza + scenegeom.cos_vza
 
         self.Zx = np.where(self.dangle > dither_more,
-                      -1. * (scenegeom.sin_vza * scenegeom.sin_raa) / self.dangle,
-                      0.)
+                           -1. * (scenegeom.sin_vza * scenegeom.sin_raa) / self.dangle,
+                           0.)
         self.Zy = np.where(self.dangle > dither_more,
-                      -1. * (scenegeom.sin_sza + scenegeom.sin_vza * scenegeom.cos_raa) / self.dangle,
-                      0.)
+                           -1. * (scenegeom.sin_sza + scenegeom.sin_vza * scenegeom.cos_raa) / self.dangle,
+                           0.)
 
         self.cos_wd = np.cos(self.wd)
         self.sin_wd = np.sin(self.wd)
@@ -151,10 +134,3 @@ class CMSharedWind:
         self.eta = self.Zyprime / self.sigy
 
         self.p = np.exp(-0.5 * (self.zeta * self.zeta + self.eta * self.eta)) / (2. * np.pi * self.sigx * self.sigy)
-
-
-
-
-
-
-

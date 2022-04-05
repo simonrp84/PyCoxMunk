@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License along with
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyCoxMunk.src.CM_SceneGeom import CMSceneGeom, CMCalcAngles
+from PyCoxMunk.src.CM_SceneGeom import CMSceneGeom, cm_calcangles
 from PyCoxMunk.src.CM_Calcs import calc_cox_munk, CM_Reflectance
 from PyCoxMunk.src.CM_Shared_Wind import CMSharedWind
 from satpy import Scene
@@ -80,7 +80,7 @@ class PyCoxMunk:
         else:
             self.angle_names = angle_names
         if angle_names == 'calc':
-            scn = CMCalcAngles(scn, refband=band_names[0])
+            scn = cm_calcangles(scn, refband=band_names[0])
             have_angles = True
 
         if oc_dir is None:
