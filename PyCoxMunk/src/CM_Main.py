@@ -27,7 +27,7 @@ class PyCoxMunk:
     """The main class for the library, sets up and runs processing."""
 
     def __init__(self, scn, band_names, oc_dir=None, angle_names=None,
-                 do_brdf=False, mask_bad=True):
+                 do_brdf=False, mask_bad=True, delete_when_done=True):
         """Initialise the class.
         Inputs:
         - scn: Satpy Scene, the scene containing data and angles.
@@ -49,6 +49,11 @@ class PyCoxMunk:
             self.mask_bad = mask_bad
         else:
             raise ValueError("mask_bad variable must be boolean!")
+
+        if type(delete_when_done) is bool:
+            self.delete_when_done = delete_when_done
+        else:
+            raise ValueError("delete_when_done variable must be boolean!")
 
         if type(scn) is not Scene:
             raise ValueError("input scene variable must be a satpy Scene!")
@@ -143,6 +148,7 @@ class PyCoxMunk:
             self.cm_refl = calc_cox_munk(self.scn[band_id].attrs['wavelength'].central,
                                          self.geometry,
                                          self.shared_wind)
+            tmp = np.array(self.cm_refl.rho)
             self.scn[out_band_id].data = self.cm_refl.rho
 
             if self.do_brdf:
@@ -164,11 +170,10 @@ class PyCoxMunk:
 
             # Mask bad pixels
             if self.mask_bad:
-                print('in here', band_id)
                 masker_rho = np.argwhere(self.cm_refl.rho < - 0.5)
                 masker_sza = np.argwhere(self.geometry.sza >= self.geometry.zenith_max)
                 masker_vza = np.argwhere(self.geometry.vza >= self.geometry.zenith_max)
-                print(masker_vza)
+
                 self.cm_refl.rho[masker_rho] = np.nan
                 self.cm_refl.rho[masker_sza] = np.nan
                 self.cm_refl.rho[masker_vza] = np.nan
@@ -186,8 +191,9 @@ class PyCoxMunk:
                     self.cm_refl.rho_dd[masker_vza] = np.nan
                     self.cm_refl.rho_dv[masker_vza] = np.nan
 
-        del self.shared_wind
-        del self.geometry
-        del self.cm_refl.rhoul
-        del self.cm_refl.rhogl
-        del self.cm_refl.rhowc
+        if self.delete_when_done:
+            del self.shared_wind
+            del self.geometry
+            del self.cm_refl.rhoul
+            del self.cm_refl.rhogl
+            del self.cm_refl.rhowc

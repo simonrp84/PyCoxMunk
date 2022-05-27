@@ -24,6 +24,10 @@ chlconc = 0.18
 
 n_air = 1.00029
 
+# Absolute wavelength limits for algorithm
+cm_min_wvl = 0.2
+cm_max_wvl = 4.5
+
 zeisse_coef = np.array([[1.6753e-3, -1.66517e-4, 2.03068e-5],
                         [-6.96112e-3, -55537e-3, 2.60686e-3],
                         [2.86324e-3, 1.86059e-3, -4.69589e-4]])

@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License along with
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Utility functions used in multiple places in the code."""
+import xarray as xr
 import numpy as np
 
 
@@ -32,6 +33,8 @@ def check_type(in_val, var_typ):
     if type(in_val) == float:
         return np.array([in_val])
     elif type(in_val) == np.ndarray:
+        return in_val
+    elif (type(in_val)) == xr.DataArray:
         return in_val
     else:
         raise TypeError(f'{var_typ} must be a single float or numpy array! Got: {type(in_val)}')

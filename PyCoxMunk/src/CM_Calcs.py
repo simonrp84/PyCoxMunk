@@ -17,7 +17,7 @@
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Class for the Scene wind and sea surface information."""
 
-from PyCoxMunk.src.CM_Constants import CM_DATA_DICT, WaterData, chlconc, n_air, dither_more
+from PyCoxMunk.src.CM_Constants import CM_DATA_DICT, WaterData, chlconc, n_air, dither_more, cm_min_wvl, cm_max_wvl
 from PyCoxMunk.src.CM_Shared_Wind import CMSharedWind
 from PyCoxMunk.src.CM_SceneGeom import CMSceneGeom
 import numpy as np
@@ -28,7 +28,10 @@ class CM_Reflectance:
     def __init__(self, cwvl=None, rho=None, rhowc=None, rhogl=None, rhoul=None,
                  rho_0v=None, rho_0d=None, rho_dv=None, rho_dd=None):
         """Class for holding the output Cox-Munk reflectances and BRDF."""
-        self.cwvl = cwvl  # The central wavelength of the band reflectances
+        if type(cwvl) is float or cwvl is None:
+            self.cwvl = cwvl  # The central wavelength of the band reflectances
+        else:
+            raise ValueError("Central wavelength must be a float!")
         self.rho = rho  # The reflectance
         self.rhowc = rhowc  # White cap reflectance
         self.rhogl = rhogl  # Glint reflectance
@@ -49,6 +52,9 @@ def _compute_bands_to_use(cwvl):
     wvl_keys = list(CM_DATA_DICT.keys())
     wvl_keys.sort()
 
+    if cwvl <= cm_min_wvl or cwvl > cm_max_wvl:
+        raise ValueError(f"Central wavelength must be between {cm_min_wvl} and {cm_max_wvl}.")
+
     if cwvl <= wvl_keys[0]:
         warnings.warn(f"Warning: Band wavelength {cwvl} is less than PyCoxMunk minimum wavelength {wvl_keys[0]}")
         return None, wvl_keys[0]
@@ -59,7 +65,6 @@ def _compute_bands_to_use(cwvl):
         for i in range(0, len(wvl_keys) - 1):
             if cwvl >= wvl_keys[i] and cwvl < wvl_keys[i + 1]:
                 return wvl_keys[i], wvl_keys[i + 1]
-    raise ValueError(f"Cannot find appropriate Cox Munk bands for user selected band {cwvl}!")
 
 
 def _get_interp_frac(prev_b, next_b, centre):
@@ -169,8 +174,8 @@ def _compute_abcd(first, second):
     d1 = np.tan(first + second)
 
     # Catch very small values to prevent division by zero
-    b1 = np.where(b1 < dither_more, np.nan, b1)
-    d1 = np.where(d1 < dither_more, np.nan, d1)
+    b1 = np.where(np.abs(b1) < dither_more, np.nan, b1)
+    d1 = np.where(np.abs(d1) < dither_more, np.nan, d1)
 
     return a1, b1, c1, d1
 
@@ -222,8 +227,6 @@ def calc_cox_munk(band_wvl: float, geom_info: CMSceneGeom, wind_info: CMSharedWi
     t_d = np.where(np.isnan(t_d), 0, t_d)
 
     # Combine surface transmission with underlight to give total underlight contribution
-    _write_gdal('D:/t_d.tiff', t_d)
-    _write_gdal('D:/refl_water.tiff', refl_water)
     rhoul = (t_u + t_d + refl_water) / (1.0 - r_u * refl_water)
 
     # Now we can move on to calculate the actual reflectance, which is the actual Cox-Munk step

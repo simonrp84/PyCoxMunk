@@ -17,8 +17,7 @@
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Test the Cox-Munk calculations module."""
 
-from PyCoxMunk.src.CM_SceneGeom import CMSceneGeom as Cm_sg
-from PyCoxMunk.src.CM_SceneGeom import cm_calcangles
+import PyCoxMunk.src.CM_Calcs as cmcalcs
 from unittest import mock
 import numpy as np
 import unittest
@@ -34,6 +33,51 @@ class TestCMCalcs(unittest.TestCase):
         self.raa = np.array([113.376, 52.663, 75.892, 117.775])
         self.lats = np.array([-5.247, -58.473, 17.666, 48.237])
         self.lons = np.array([-116.184, 73.047, 120.744, -121.522])
+
+    def test_cmrefl(self):
+        """Test the CM_Reflectance class."""
+        with self.assertRaises(ValueError):
+            cmcalcs.CM_Reflectance(cwvl='1.3')
+        with self.assertRaises(ValueError):
+            cmcalcs.CM_Reflectance(cwvl=1)
+        with self.assertRaises(ValueError):
+            cmcalcs.CM_Reflectance(cwvl=[1., 2.])
+
+        cmref = cmcalcs.CM_Reflectance(cwvl=1.3)
+        self.assertEqual(1.3, cmref.cwvl)
+        self.assertEqual(None, cmref.rhowc)
+
+        cmref = cmcalcs.CM_Reflectance(cwvl=1.3, rho=1.54, rhowc=12.3)
+        self.assertEqual(1.54, cmref.rho)
+        self.assertEqual(12.3, cmref.rhowc)
+
+    def test_compute_bands(self):
+        """Test code that selects Cox-Munk bands."""
+        blist = [0.22, 0.47, 0.65, 0.83, 1.4, 1.92, 2.56, 3.4]
+        ex_res = [(None, 0.47), (None, 0.47), (0.65, 0.87), (0.65, 0.87),
+                  (1.375, 1.6), (1.6, 2.13), (2.13, 3.7), (2.13, 3.7)]
+        for i in range(0, len(blist)):
+            self.assertEqual(cmcalcs._compute_bands_to_use(blist[i]), ex_res[i])
+        with self.assertRaises(ValueError):
+            cmcalcs._compute_bands_to_use(0.18)
+        with self.assertRaises(ValueError):
+            cmcalcs._compute_bands_to_use(5.18)
+
+    def test_interp_frac(self):
+        """Test interpolation of wavelengths."""
+        w1 = 0.45
+        w2 = 0.65
+        cw = [0.45, 0.47, 0.53, 0.59, 0.64]
+        omins = [(1.0, 0.0), (0.9, 0.1), (0.6, 0.4), (0.3, 0.7), (0.05, 0.95)]
+        for i in range(0, len(cw)):
+            retr = cmcalcs._get_interp_frac(w1, w2, cw[i])
+            self.assertAlmostEqual(retr[0], omins[i][0])
+            self.assertAlmostEqual(retr[1], omins[i][1])
+
+        with self.assertRaises(ValueError):
+            cmcalcs._get_interp_frac(1, 2, 0.5)
+        with self.assertRaises(ValueError):
+            cmcalcs._get_interp_frac(1, 2, 2.5)
 
 
 if __name__ == '__main__':
