@@ -1,0 +1,17 @@
+name: test-environment
+channels:
+  - conda-forge
+dependencies:
+  - numpy
+  - numba
+  - scipy
+  - pandas
+  - dask
+  - pyorbital
+  - pyresample
+  - satpy
+  - netcdf4
+  - gdal
+  - click
+  - appdirs
+  - requests
