@@ -128,24 +128,24 @@ def compute_wavelength_specific_water_props(cwvl, meth='interp'):
     p_frac, n_frac = _get_interp_frac(p_band, n_band, cwvl)
 
     new_wat_data = WaterData(wavelength=cwvl,
-                             refrac_real=p_frac * CM_DATA_DICT[p_band].refrac_real +
-                                         n_frac * CM_DATA_DICT[n_band].refrac_real,
-                             refrac_imag=p_frac * CM_DATA_DICT[p_band].refrac_imag +
-                                         n_frac * CM_DATA_DICT[n_band].refrac_imag,
-                             base_abs=p_frac * CM_DATA_DICT[p_band].base_abs +
-                                      n_frac * CM_DATA_DICT[n_band].base_abs,
-                             base_backscat=p_frac * CM_DATA_DICT[p_band].base_backscat +
-                                           n_frac * CM_DATA_DICT[n_band].base_backscat,
-                             whitecap_refl=p_frac * CM_DATA_DICT[p_band].whitecap_refl +
-                                           n_frac * CM_DATA_DICT[n_band].whitecap_refl,
+                             refrac_real=(p_frac * CM_DATA_DICT[p_band].refrac_real +
+                                          n_frac * CM_DATA_DICT[n_band].refrac_real),
+                             refrac_imag=(p_frac * CM_DATA_DICT[p_band].refrac_imag +
+                                          n_frac * CM_DATA_DICT[n_band].refrac_imag),
+                             base_abs=(p_frac * CM_DATA_DICT[p_band].base_abs +
+                                       n_frac * CM_DATA_DICT[n_band].base_abs),
+                             base_backscat=(p_frac * CM_DATA_DICT[p_band].base_backscat +
+                                            n_frac * CM_DATA_DICT[n_band].base_backscat),
+                             whitecap_refl=(p_frac * CM_DATA_DICT[p_band].whitecap_refl
+                                            + n_frac * CM_DATA_DICT[n_band].whitecap_refl),
                              chl_a_coef=[p_frac * CM_DATA_DICT[p_band].chl_a_coef[0] +
                                          n_frac * CM_DATA_DICT[n_band].chl_a_coef[0],
                                          p_frac * CM_DATA_DICT[p_band].chl_a_coef[1] +
                                          n_frac * CM_DATA_DICT[n_band].chl_a_coef[1]],
-                             total_abs=p_frac * CM_DATA_DICT[p_band].total_abs +
-                                       n_frac * CM_DATA_DICT[n_band].total_abs,
-                             total_backscat=p_frac * CM_DATA_DICT[p_band].total_backscat +
-                                            n_frac * CM_DATA_DICT[n_band].total_backscat, )
+                             total_abs=(p_frac * CM_DATA_DICT[p_band].total_abs +
+                                        n_frac * CM_DATA_DICT[n_band].total_abs),
+                             total_backscat=(p_frac * CM_DATA_DICT[p_band].total_backscat +
+                                             n_frac * CM_DATA_DICT[n_band].total_backscat), )
     return new_wat_data
 
 

@@ -19,7 +19,6 @@
 
 from PyCoxMunk.src.CM_Shared_Wind import CMSharedWind
 from PyCoxMunk.src.CM_SceneGeom import CMSceneGeom
-from unittest import mock
 import numpy as np
 import unittest
 
@@ -33,7 +32,7 @@ class TestSharedWind(unittest.TestCase):
         self.ws = np.array([17.04728717, 5.65685425, 11.94194289, 13.42013413])
         self.wd = np.array([2.38240853, 4.74502664, 5.37000261, 4.60018284])
         self.wcfrac = np.array([0.06388454, 0.00131533, 0.01825043, 0.02752158])
-        self.ergodic = np.array([ 0.53386542, 0.93202052, -9.53116332, -9.9822338])
+        self.ergodic = np.array([0.53386542, 0.93202052, -9.53116332, -9.9822338])
         self.cosomega = np.array([-0.00881482, 0.30019419,  0.10046262, -0.37514133])
         self.cosbeta = np.array([0.74863662, 0.63201908, 0.73177281, 0.48107697])
         self.w = np.array([0.78980563, 0.63295005, 0.73508197, 0.97767278])

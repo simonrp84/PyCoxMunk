@@ -29,13 +29,13 @@ class TestWaterClass(unittest.TestCase):
         Correct type for the chl_a_coef value is a 2-element list"""
         # Single float
         with self.assertRaises(TypeError):
-            test_cls = CM_C.WaterData(None, None, None, None, None, None, 1.0, None, None)
+            CM_C.WaterData(None, None, None, None, None, None, 1.0, None, None)
         # Single item list
         with self.assertRaises(TypeError):
-            test_cls = CM_C.WaterData(None, None, None, None, None, None, [1.0], None, None)
+            CM_C.WaterData(None, None, None, None, None, None, [1.0], None, None)
         # Three item list
         with self.assertRaises(TypeError):
-            test_cls = CM_C.WaterData(None, None, None, None, None, None, [1.0, 1.0, 1.0], None, None)
+            CM_C.WaterData(None, None, None, None, None, None, [1.0, 1.0, 1.0], None, None)
 
     def test_types(self):
         # Check constants are floats."""

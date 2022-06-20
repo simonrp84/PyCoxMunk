@@ -17,3 +17,8 @@
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 
 from PyCoxMunk.src.CM_Main import PyCoxMunk
+from PyCoxMunk.src import CM_Utils
+from PyCoxMunk.src import CM_Calcs
+from PyCoxMunk.src import CM_Constants
+from PyCoxMunk.src import CM_Shared_Wind
+from PyCoxMunk.src import CM_SceneGeom

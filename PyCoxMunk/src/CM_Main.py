@@ -85,7 +85,7 @@ class PyCoxMunk:
         else:
             self.angle_names = angle_names
         if angle_names == 'calc':
-            scn = cm_calcangles(scn, refband=band_names[0])
+            self.scn = cm_calcangles(scn, refband=band_names[0])
             have_angles = True
 
         if oc_dir is None:
@@ -148,7 +148,7 @@ class PyCoxMunk:
             self.cm_refl = calc_cox_munk(self.scn[band_id].attrs['wavelength'].central,
                                          self.geometry,
                                          self.shared_wind)
-            tmp = np.array(self.cm_refl.rho)
+
             self.scn[out_band_id].data = self.cm_refl.rho
 
             if self.do_brdf:

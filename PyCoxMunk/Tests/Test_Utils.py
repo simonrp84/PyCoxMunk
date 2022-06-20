@@ -47,7 +47,6 @@ class TestUtils(unittest.TestCase):
         out_arr = CM_Utils.check_and_reshape(test_arr, 10)
         self.assertEqual(out_arr.shape, (10,))
 
-
     def test_gauss_leg(self):
         """Test the Gauss-Legendre calculations."""
 
@@ -74,4 +73,3 @@ class TestUtils(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             CM_Utils.gauss_leg_quadx(0, -10, 10)
-

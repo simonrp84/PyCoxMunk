@@ -17,8 +17,7 @@
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Test the Cox-Munk calculations module."""
 
-import PyCoxMunk.src.CM_Calcs as cmcalcs
-from unittest import mock
+import PyCoxMunk.src.CM_Calcs as CMCalcs
 import numpy as np
 import unittest
 
@@ -37,17 +36,17 @@ class TestCMCalcs(unittest.TestCase):
     def test_cmrefl(self):
         """Test the CM_Reflectance class."""
         with self.assertRaises(ValueError):
-            cmcalcs.CM_Reflectance(cwvl='1.3')
+            CMCalcs.CM_Reflectance(cwvl='1.3')
         with self.assertRaises(ValueError):
-            cmcalcs.CM_Reflectance(cwvl=1)
+            CMCalcs.CM_Reflectance(cwvl=1)
         with self.assertRaises(ValueError):
-            cmcalcs.CM_Reflectance(cwvl=[1., 2.])
+            CMCalcs.CM_Reflectance(cwvl=[1., 2.])
 
-        cmref = cmcalcs.CM_Reflectance(cwvl=1.3)
+        cmref = CMCalcs.CM_Reflectance(cwvl=1.3)
         self.assertEqual(1.3, cmref.cwvl)
         self.assertEqual(None, cmref.rhowc)
 
-        cmref = cmcalcs.CM_Reflectance(cwvl=1.3, rho=1.54, rhowc=12.3)
+        cmref = CMCalcs.CM_Reflectance(cwvl=1.3, rho=1.54, rhowc=12.3)
         self.assertEqual(1.54, cmref.rho)
         self.assertEqual(12.3, cmref.rhowc)
 
@@ -57,11 +56,11 @@ class TestCMCalcs(unittest.TestCase):
         ex_res = [(None, 0.47), (None, 0.47), (0.65, 0.87), (0.65, 0.87),
                   (1.375, 1.6), (1.6, 2.13), (2.13, 3.7), (2.13, 3.7)]
         for i in range(0, len(blist)):
-            self.assertEqual(cmcalcs._compute_bands_to_use(blist[i]), ex_res[i])
+            self.assertEqual(CMCalcs._compute_bands_to_use(blist[i]), ex_res[i])
         with self.assertRaises(ValueError):
-            cmcalcs._compute_bands_to_use(0.18)
+            CMCalcs._compute_bands_to_use(0.18)
         with self.assertRaises(ValueError):
-            cmcalcs._compute_bands_to_use(5.18)
+            CMCalcs._compute_bands_to_use(5.18)
 
     def test_interp_frac(self):
         """Test interpolation of wavelengths."""
@@ -70,14 +69,14 @@ class TestCMCalcs(unittest.TestCase):
         cw = [0.45, 0.47, 0.53, 0.59, 0.64]
         omins = [(1.0, 0.0), (0.9, 0.1), (0.6, 0.4), (0.3, 0.7), (0.05, 0.95)]
         for i in range(0, len(cw)):
-            retr = cmcalcs._get_interp_frac(w1, w2, cw[i])
+            retr = CMCalcs._get_interp_frac(w1, w2, cw[i])
             self.assertAlmostEqual(retr[0], omins[i][0])
             self.assertAlmostEqual(retr[1], omins[i][1])
 
         with self.assertRaises(ValueError):
-            cmcalcs._get_interp_frac(1, 2, 0.5)
+            CMCalcs._get_interp_frac(1, 2, 0.5)
         with self.assertRaises(ValueError):
-            cmcalcs._get_interp_frac(1, 2, 2.5)
+            CMCalcs._get_interp_frac(1, 2, 2.5)
 
 
 if __name__ == '__main__':
