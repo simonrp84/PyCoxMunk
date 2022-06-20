@@ -63,7 +63,7 @@ def _compute_bands_to_use(cwvl):
         return wvl_keys[-1], None
     else:
         for i in range(0, len(wvl_keys) - 1):
-            if cwvl >= wvl_keys[i] and cwvl < wvl_keys[i + 1]:
+            if wvl_keys[i] <= cwvl < wvl_keys[i + 1]:
                 return wvl_keys[i], wvl_keys[i + 1]
 
 
@@ -180,7 +180,23 @@ def _compute_abcd(first, second):
     return a1, b1, c1, d1
 
 
-def calc_cox_munk(band_wvl: float, geom_info: CMSceneGeom, wind_info: CMSharedWind, oc_cci_data=None) -> CM_Reflectance:
+def calc_cox_munk_brdf_terms(in_refl: CM_Reflectance,
+                             band_wvl: float,
+                             geom_info: CMSceneGeom,
+                             wind_info: CMSharedWind,
+                             oc_cci_data=None) -> CM_Reflectance:
+    """Compute the BRDF terms for the sea surface reflectance.
+    These terms are:
+     - rho_0v:
+     - rho_0d:
+     - rho_dv:
+     - rho_dd: """
+
+
+def calc_cox_munk(band_wvl: float,
+                  geom_info: CMSceneGeom,
+                  wind_info: CMSharedWind,
+                  oc_cci_data=None) -> CM_Reflectance:
     """Compute the bidirectional reflectance from scene information using the Cox-Munk approach.
     Currently this uses only the band central wavelength, not spectral response, and doesn't include the
     ability to process with Ocean Color CCI (or other ocean color) datasets.
@@ -191,7 +207,7 @@ def calc_cox_munk(band_wvl: float, geom_info: CMSceneGeom, wind_info: CMSharedWi
       - wind_info: CMSharedWind, the wind-based information for the scene.
       - oc_cci_data: None, placeholder for when this data is used.
     Returns:
-      - cox_munk_refl: CM_Reflectance, output reflectances and, if requested, BRDF components.
+      - coxmunk_data: CM_Reflectance, output reflectances and, if requested, BRDF components.
     """
 
     # Get specific information about water properties at wavelength
