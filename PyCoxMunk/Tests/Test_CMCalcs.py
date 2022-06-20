@@ -17,7 +17,7 @@
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Test the Cox-Munk calculations module."""
 
-import PyCoxMunk.src.CM_Calcs as CMCalcs
+import PyCoxMunk.CM_Calcs as CMCalcs
 import numpy as np
 import unittest
 

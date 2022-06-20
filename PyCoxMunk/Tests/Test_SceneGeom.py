@@ -17,8 +17,8 @@
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Test the scene geometry module."""
 
-from PyCoxMunk.src.CM_SceneGeom import CMSceneGeom as Cm_sg
-from PyCoxMunk.src.CM_SceneGeom import cm_calcangles
+from PyCoxMunk.CM_SceneGeom import CMSceneGeom as Cm_sg
+from PyCoxMunk.CM_SceneGeom import cm_calcangles
 from unittest import mock
 import numpy as np
 import unittest
@@ -39,13 +39,13 @@ class TestSceneGeom(unittest.TestCase):
         """Test the calculation of relative azimuth angles."""
 
         # Check the calculation function is called when no RAA is supplied
-        with mock.patch('PyCoxMunk.src.CM_SceneGeom.CMSceneGeom.calc_relazi') as calc_func:
+        with mock.patch('PyCoxMunk.CM_SceneGeom.CMSceneGeom.calc_relazi') as calc_func:
             calc_func.side_effect = np.array([1.])
             Cm_sg(1., 1., 1., 1., 1., 1.)
             calc_func.assert_called_once()
 
         # Check the calculation function not called if RAA supplied
-        with mock.patch('PyCoxMunk.src.CM_SceneGeom.CMSceneGeom.calc_relazi') as calc_func:
+        with mock.patch('PyCoxMunk.CM_SceneGeom.CMSceneGeom.calc_relazi') as calc_func:
             Cm_sg(1., 1., 1., 1., 1., 1., 1.)
             calc_func.assert_not_called()
 

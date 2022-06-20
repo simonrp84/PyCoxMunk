@@ -17,9 +17,9 @@
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Class for the Scene wind and sea surface information."""
 
-from PyCoxMunk.src.CM_Utils import check_and_reshape, check_type
-from PyCoxMunk.src.CM_SceneGeom import CMSceneGeom
-from PyCoxMunk.src.CM_Constants import dither_more
+from PyCoxMunk.CM_Utils import check_and_reshape, check_type
+from PyCoxMunk.CM_SceneGeom import CMSceneGeom
+from PyCoxMunk.CM_Constants import dither_more
 import numpy as np
 
 
@@ -40,7 +40,7 @@ class CMSharedWind:
         Returns:
           - float or np.ndarray, cos(vza) or ergodic cap area, depending on vza.
         """
-        from PyCoxMunk.src.CM_Constants import zeisse_coef as zc
+        from PyCoxMunk.CM_Constants import zeisse_coef as zc
 
         tp = (theta - np.deg2rad(70)) / 5.
         wp = 4. * np.log10(ws) / 1.30103

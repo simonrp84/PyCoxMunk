@@ -17,7 +17,7 @@
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Test the constants module."""
 
-from PyCoxMunk.src import CM_Constants as CM_C
+from PyCoxMunk import CM_Constants as CM_C
 import unittest
 
 
