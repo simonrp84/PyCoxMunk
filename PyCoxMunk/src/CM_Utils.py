@@ -16,14 +16,105 @@
 # You should have received a copy of the GNU General Public License along with
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Utility functions used in multiple places in the code."""
+from numba import jit
 import xarray as xr
 import numpy as np
+
+
+@jit(nopython=True)
+def _gauss_leg_point(n, i, ia, ib, da):
+    """Compute a given Gauss-Legendre point."""
+
+    db = (4 * i + 3) / ia * np.pi
+    y1 = np.cos(db + da / np.tan(db))
+
+    p2 = 0
+
+    for looper in range(0, 100000):
+        p2 = 0
+        p1 = 1
+        for j in range(0, int(np.floor(n))):
+            p3 = p2
+            p2 = p1
+
+            db = y1 * p2
+            p1 = j / (j + 1) * (db - p3) + db
+
+        db = 1 - y1 * y1
+        p1p = n * (p2 - y1 * p1) / db
+
+        p1pp = (2 * y1 * p1p - ib * p1) / db
+
+        y2 = y1
+        db = p1 / p1p
+        y1 = y2 - db * (1 + db * p1pp / (2 * p1p))
+
+        if np.abs(y1 - y2) < 3e-14:
+            break
+
+    return y1, p2
+
+
+@jit(nopython=True, parallel=True)
+def gauss_leg_quadx(n, x1, x2):
+    """Calculate the abscissas and weights of the Gauss-Legendre n-point quadrature formula.
+
+    Uses the method described in:
+    Philip J. Davis and Philip Rabinowitz. Methods of Numerical Integration. Dover
+    Publications Inc., 31 East 2nd Street, Mineola, Ney York 11501, second edition,
+    1984. ISBN 0486453391.
+
+    Inputs:
+     - n: Int, the number of points to compute.
+     - x1: Float, lower limit for computation.
+     - x2: Float, upper limit for computation.
+    Returns:
+     - x: ndarray, the abscissas.
+     - w: ndarray, the weights.
+    """
+
+    if n <= 0:
+        raise ValueError("Gauss-Leg number of points must be greater than zero.")
+
+    x = np.zeros(int(np.floor(n)))
+    w = np.zeros(int(np.floor(n)))
+
+    nn = (n + 1) / 2.
+
+    ia = 4 * n + 2
+    ib = n * (n + 1)
+
+    da = (n - 1) / (8. * n ** 3)
+
+    db = (x1 + x2) / 2.
+    dc = (x2 - x1) / 2.
+
+    ii = int(np.floor(n-1))
+    for i in range(0, int(np.floor(nn))):
+        y1, p2 = _gauss_leg_point(n, i, ia, ib, da)
+
+        dd = dc * y1
+
+        x[i] = db - dd
+        x[ii] = db + dd
+
+        de = n * p2
+        de = 2 / (de * de)
+        w[i] = (dc - dd*y1) * de
+
+        w[ii] = w[i]
+
+        ii = ii - 1
+
+    return w, x
 
 
 def check_and_reshape(arr, good_shape):
     """If array is single value then scale to match other arrays."""
     if arr.shape == (1,):
         arr = np.full(good_shape, arr[0])
+    elif arr.shape != good_shape:
+        raise ValueError("Cannot resize array and sizes do not match.")
     return arr
 
 
