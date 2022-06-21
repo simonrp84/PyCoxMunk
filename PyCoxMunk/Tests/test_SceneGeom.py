@@ -175,7 +175,3 @@ class TestSceneGeom(unittest.TestCase):
                   tmp_arr, tmp_arr, tmp_arr, fix_angs=False)
         Cm_sg(tmp_arr, tmp_arr, tmp_arr,
               tmp_arr, tmp_arr, tmp_arr)
-
-
-if __name__ == '__main__':
-    unittest.main()

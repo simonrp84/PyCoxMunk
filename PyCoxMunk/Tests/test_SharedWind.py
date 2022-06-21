@@ -60,6 +60,3 @@ class TestSharedWind(unittest.TestCase):
         np.testing.assert_allclose(sh_wind.w, self.w, rtol=1e-5)
         np.testing.assert_allclose(sh_wind.p, self.p, rtol=1e-5)
 
-
-if __name__ == '__main__':
-    unittest.main()

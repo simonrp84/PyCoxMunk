@@ -210,9 +210,3 @@ class TestCMCalcs(unittest.TestCase):
         np.testing.assert_almost_equal(exp_wc, ref_data.rhowc)
         np.testing.assert_almost_equal(exp_gl, ref_data.rhogl)
         np.testing.assert_almost_equal(exp_ul, ref_data.rhoul)
-
-
-
-
-
-
