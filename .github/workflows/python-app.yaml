@@ -30,7 +30,7 @@ jobs:
       run: |
         pip install pytest
         pip install pytest-cov
-        pytest --cov=PyCoxMunk PyCoxMunk/Tests/ --cov-report=xml
+        pytest --cov=PyCoxMunk ./Tests/ --cov-report=xml
 
     - name: Upload unittest coverage to Codecov
       uses: codecov/codecov-action@v2
