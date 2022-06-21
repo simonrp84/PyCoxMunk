@@ -57,7 +57,3 @@ class TestWaterClass(unittest.TestCase):
         self.assertTrue(CM_C.CM_DATA_DICT[3.7].total_abs == 1.223e+04)
         self.assertTrue(CM_C.CM_DATA_DICT[0.55].wavelength == 0.55)
         self.assertTrue(CM_C.CM_DATA_DICT[0.87].base_abs == 5.365e+00)
-
-
-if __name__ == '__main__':
-    unittest.main()
