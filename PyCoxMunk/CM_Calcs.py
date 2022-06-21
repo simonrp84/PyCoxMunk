@@ -20,6 +20,7 @@
 from PyCoxMunk.CM_Constants import CM_DATA_DICT, WaterData, chlconc, n_air, dither_more, cm_min_wvl, cm_max_wvl
 from PyCoxMunk.CM_Shared_Wind import CMSharedWind
 from PyCoxMunk.CM_SceneGeom import CMSceneGeom
+from copy import deepcopy
 import numpy as np
 import warnings
 
@@ -54,7 +55,6 @@ def _compute_bands_to_use(cwvl):
 
     if cwvl <= cm_min_wvl or cwvl > cm_max_wvl:
         raise ValueError(f"Central wavelength must be between {cm_min_wvl} and {cm_max_wvl}.")
-
     if cwvl <= wvl_keys[0]:
         warnings.warn(f"Warning: Band wavelength {cwvl} is less than PyCoxMunk minimum wavelength {wvl_keys[0]}")
         return None, wvl_keys[0]
@@ -112,17 +112,19 @@ def compute_wavelength_specific_water_props(cwvl, meth='interp'):
     if meth == 'next' and n_band is None:
         raise ValueError("Cannot use next wavelength as user-requested wavelength too high.")
     if meth == 'interp' and p_band is None:
-        warnings.warn("Cannot use wavelength interpolation as user-requested wavelength too low. Using next.")
+        warnings.warn("Cannot use wavelength interpolation as user-requested wavelength too low. Using next.",
+                      UserWarning)
         meth = 'next'
     if meth == 'interp' and n_band is None:
-        warnings.warn("Cannot use wavelength interpolation as user-requested wavelength too high. Using previous.")
+        warnings.warn("Cannot use wavelength interpolation as user-requested wavelength too high. Using previous.",
+                      UserWarning)
         meth = 'prev'
 
     # This is simple if we're only using previous / next wavelength
     if meth == 'prev':
-        return CM_DATA_DICT[p_band]
+        return deepcopy(CM_DATA_DICT[p_band])
     elif meth == 'next':
-        return CM_DATA_DICT[n_band]
+        return deepcopy(CM_DATA_DICT[n_band])
 
     # More complex calculations needed for interpolation. First, find fraction of each wavelength to use.
     p_frac, n_frac = _get_interp_frac(p_band, n_band, cwvl)
@@ -162,6 +164,8 @@ def run_oceancolor(water_data, oc_data=None):
         # Currently the below lines are disabled for compatibility with ORAC during testing
         # water_data.total_backscat = water_data.base_backscat + water_data.chlbsc
         # water_data.total_abs = water_data.base_abs + water_data.chlabs
+    else:
+        raise NotImplementedError("PyCoxMunk currently does not support Ocean Color data!")
 
     return water_data
 
@@ -260,16 +264,3 @@ def calc_cox_munk(band_wvl: float,
     rho = rhowc + (1 - wind_info.wcfrac) * (rhogl + rhoul)
     coxmunk_data = CM_Reflectance(band_wvl, rho, rhowc, rhogl, rhoul, None, None, None, None)
     return coxmunk_data
-
-
-def _write_gdal(fname, datas):
-    from osgeo import gdal
-    driver = gdal.GetDriverByName("GTiff")
-    shp = datas.shape
-    dst_ds = driver.Create(fname,
-                           shp[1],
-                           shp[0],
-                           1,
-                           gdal.GDT_Float32)
-    dst_ds.GetRasterBand(1).WriteArray(datas)
-    del dst_ds

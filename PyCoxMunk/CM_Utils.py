@@ -16,12 +16,10 @@
 # You should have received a copy of the GNU General Public License along with
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Utility functions used in multiple places in the code."""
-from numba import jit
 import xarray as xr
 import numpy as np
 
 
-@jit(nopython=True)
 def _gauss_leg_point(n, i, ia, ib, da):
     """Compute a given Gauss-Legendre point."""
 
@@ -55,7 +53,6 @@ def _gauss_leg_point(n, i, ia, ib, da):
     return y1, p2
 
 
-@jit(nopython=True, parallel=True)
 def gauss_leg_quadx(n, x1, x2):
     """Calculate the abscissas and weights of the Gauss-Legendre n-point quadrature formula.
 
@@ -129,3 +126,16 @@ def check_type(in_val, var_typ):
         return in_val
     else:
         raise TypeError(f'{var_typ} must be a single float or numpy array! Got: {type(in_val)}')
+
+
+def _write_gdal(fname, datas): # pragma: no cover
+    from osgeo import gdal
+    driver = gdal.GetDriverByName("GTiff")
+    shp = datas.shape
+    dst_ds = driver.Create(fname,
+                           shp[1],
+                           shp[0],
+                           1,
+                           gdal.GDT_Float32)
+    dst_ds.GetRasterBand(1).WriteArray(datas)
+    del dst_ds
