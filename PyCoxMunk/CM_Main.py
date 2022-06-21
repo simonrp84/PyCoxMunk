@@ -68,7 +68,7 @@ class PyCoxMunk:
             self.band_names = band_names
 
         if angle_names is not None and type(angle_names) is not dict and type(angle_names) is not str:
-            raise ValueError("angle_names variable must be None or a dict!")
+            raise ValueError("angle_names variable must be None, a dict or a string!")
         elif angle_names is None or angle_names == 'calc':
             self.angle_names = {'sza': 'solar_zenith_angle',
                                 'vza': 'satellite_zenith_angle',
