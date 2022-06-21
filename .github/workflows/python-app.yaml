@@ -38,3 +38,6 @@ jobs:
         flags: unittests
         file: ./coverage.xml
         env_vars: OS,PYTHON_VERSION
+        name: codecov-umbrella # optional
+        fail_ci_if_error: true # optional (default = false)
+        verbose: true
