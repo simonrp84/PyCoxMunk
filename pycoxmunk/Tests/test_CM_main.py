@@ -19,7 +19,7 @@
 
 
 import pytest
-from PyCoxMunk.CM_Main import PyCoxMunk
+from pycoxmunk.CM_Main import PyCoxMunk
 from unittest import mock
 from satpy import Scene
 import unittest

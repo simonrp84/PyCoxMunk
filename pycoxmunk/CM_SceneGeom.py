@@ -17,7 +17,7 @@
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Class for the Scene geometry information."""
 
-from PyCoxMunk.CM_Utils import check_and_reshape, check_type
+from pycoxmunk.CM_Utils import check_and_reshape, check_type
 import numpy as np
 import warnings
 

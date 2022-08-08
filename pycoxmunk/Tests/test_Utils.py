@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License along with
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Test the scene geometry module."""
-from PyCoxMunk import CM_Utils
+from pycoxmunk import CM_Utils
 from unittest import mock
 import numpy as np
 import unittest

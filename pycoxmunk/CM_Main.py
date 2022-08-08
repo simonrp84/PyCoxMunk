@@ -16,9 +16,9 @@
 # You should have received a copy of the GNU General Public License along with
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyCoxMunk.CM_SceneGeom import CMSceneGeom, cm_calcangles
-from PyCoxMunk.CM_Calcs import calc_cox_munk, CM_Reflectance
-from PyCoxMunk.CM_Shared_Wind import CMSharedWind
+from pycoxmunk.CM_SceneGeom import CMSceneGeom, cm_calcangles
+from pycoxmunk.CM_Calcs import calc_cox_munk, CM_Reflectance
+from pycoxmunk.CM_Shared_Wind import CMSharedWind
 from satpy import Scene
 import numpy as np
 

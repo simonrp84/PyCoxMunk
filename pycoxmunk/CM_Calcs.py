@@ -17,9 +17,9 @@
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Class for the Scene wind and sea surface information."""
 
-from PyCoxMunk.CM_Constants import CM_DATA_DICT, WaterData, chlconc, n_air, dither_more, cm_min_wvl, cm_max_wvl
-from PyCoxMunk.CM_Shared_Wind import CMSharedWind
-from PyCoxMunk.CM_SceneGeom import CMSceneGeom
+from pycoxmunk.CM_Constants import CM_DATA_DICT, WaterData, chlconc, n_air, dither_more, cm_min_wvl, cm_max_wvl
+from pycoxmunk.CM_Shared_Wind import CMSharedWind
+from pycoxmunk.CM_SceneGeom import CMSceneGeom
 from copy import deepcopy
 import numpy as np
 import warnings

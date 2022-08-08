@@ -18,10 +18,10 @@
 """Test the Cox-Munk calculations module."""
 import pytest
 
-from PyCoxMunk.CM_Constants import CM_DATA_DICT, WaterData
-from PyCoxMunk.CM_Shared_Wind import CMSharedWind
-from PyCoxMunk.CM_SceneGeom import CMSceneGeom
-import PyCoxMunk.CM_Calcs as CMCalcs
+from pycoxmunk.CM_Constants import CM_DATA_DICT, WaterData
+from pycoxmunk.CM_Shared_Wind import CMSharedWind
+from pycoxmunk.CM_SceneGeom import CMSceneGeom
+import pycoxmunk.CM_Calcs as CMCalcs
 from copy import deepcopy
 from unittest import mock
 import numpy as np
@@ -92,8 +92,8 @@ class TestCMCalcs(unittest.TestCase):
         with self.assertRaises(ValueError):
             CMCalcs._get_interp_frac(1, 2, 2.5)
 
-    @mock.patch('PyCoxMunk.CM_Calcs._compute_bands_to_use')
-    @mock.patch('PyCoxMunk.CM_Calcs._get_interp_frac')
+    @mock.patch('pycoxmunk.CM_Calcs._compute_bands_to_use')
+    @mock.patch('pycoxmunk.CM_Calcs._get_interp_frac')
     def test_compute_water_wvl(self, interp, band):
         """Test selection of wavelength used for water properties."""
         band_mock = mock.MagicMock()
@@ -189,9 +189,9 @@ class TestCMCalcs(unittest.TestCase):
         """Test calculation of the Cox-Munk BRDF parameters."""
         CMCalcs.calc_cox_munk_brdf_terms(self.refl, 0.8, None, None, None)
 
-    @mock.patch('PyCoxMunk.CM_Calcs.compute_wavelength_specific_water_props')
-    @mock.patch('PyCoxMunk.CM_Calcs.run_oceancolor')
-    @mock.patch('PyCoxMunk.CM_Calcs._compute_abcd')
+    @mock.patch('pycoxmunk.CM_Calcs.compute_wavelength_specific_water_props')
+    @mock.patch('pycoxmunk.CM_Calcs.run_oceancolor')
+    @mock.patch('pycoxmunk.CM_Calcs._compute_abcd')
     def test_calc_coxmunk(self, abcd, run_oc, watprops):
         """Test the main Cox-Munk calculation."""
 

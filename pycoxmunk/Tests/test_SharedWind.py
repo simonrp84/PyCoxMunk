@@ -17,8 +17,8 @@
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Test the scene geometry module."""
 
-from PyCoxMunk.CM_Shared_Wind import CMSharedWind
-from PyCoxMunk.CM_SceneGeom import CMSceneGeom
+from pycoxmunk.CM_Shared_Wind import CMSharedWind
+from pycoxmunk.CM_SceneGeom import CMSceneGeom
 import numpy as np
 import unittest
 
