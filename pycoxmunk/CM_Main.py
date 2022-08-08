@@ -86,7 +86,6 @@ class PyCoxMunk:
             self.angle_names = angle_names
         if angle_names == 'calc':
             self.scn = cm_calcangles(scn, refband=band_names[0])
-            have_angles = True
 
         if oc_dir is None:
             self.use_occci = False
@@ -106,13 +105,10 @@ class PyCoxMunk:
                 bname = self.angle_names[kname]
                 if bname not in self.scn:
                     print(bname)
-                    have_angles = False
+                    raise KeyError(f"User-supplied angle dataset {bname} not in input scene!")
 
         # Cox Munk output class, used later
         self.cm_refl = CM_Reflectance()
-
-        if not have_angles:
-            raise KeyError(f"User-supplied angle dataset {bname} not in input scene!")
 
         # Compute longitudes and latitudes from first selected band. Assumes all bands are same
         # dimensions! This means that high res bands (such as Himawari B03) must be resampled to
