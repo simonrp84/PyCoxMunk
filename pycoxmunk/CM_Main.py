@@ -104,7 +104,6 @@ class PyCoxMunk:
             for kname in self.angle_names.keys():
                 bname = self.angle_names[kname]
                 if bname not in self.scn:
-                    print(bname)
                     raise KeyError(f"User-supplied angle dataset {bname} not in input scene!")
 
         # Cox Munk output class, used later
@@ -162,7 +161,7 @@ class PyCoxMunk:
 
                 out_band_id = f'cox_munk_rhodd_{band_id}'
                 self.scn[out_band_id] = self.scn[band_id].copy()
-                self.scn[out_band_id].data = self.cm_refl.rhodd
+                self.scn[out_band_id].data = self.cm_refl.rho_dd
 
             # Mask bad pixels
             if self.mask_bad:
@@ -174,18 +173,11 @@ class PyCoxMunk:
                 self.cm_refl.rho[masker_sza] = np.nan
                 self.cm_refl.rho[masker_vza] = np.nan
                 if self.do_brdf:
-                    self.cm_refl.rho_0d[masker_rho] = np.nan
-                    self.cm_refl.rho_0v[masker_rho] = np.nan
-                    self.cm_refl.rho_dd[masker_rho] = np.nan
-                    self.cm_refl.rho_dv[masker_rho] = np.nan
-                    self.cm_refl.rho_0d[masker_sza] = np.nan
-                    self.cm_refl.rho_0v[masker_sza] = np.nan
-                    self.cm_refl.rho_dd[masker_sza] = np.nan
-                    self.cm_refl.rho_dv[masker_sza] = np.nan
-                    self.cm_refl.rho_0d[masker_vza] = np.nan
-                    self.cm_refl.rho_0v[masker_vza] = np.nan
-                    self.cm_refl.rho_dd[masker_vza] = np.nan
-                    self.cm_refl.rho_dv[masker_vza] = np.nan
+                    for masker in [masker_rho, masker_vza, masker_sza]:
+                        self.cm_refl.rho_0d[masker] = np.nan
+                        self.cm_refl.rho_0v[masker] = np.nan
+                        self.cm_refl.rho_dd[masker] = np.nan
+                        self.cm_refl.rho_dv[masker] = np.nan
 
         if self.delete_when_done:
             del self.shared_wind
