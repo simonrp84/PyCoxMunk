@@ -20,6 +20,7 @@
 from pycoxmunk.CM_Constants import CM_DATA_DICT, WaterData, chlconc, n_air, dither_more, cm_min_wvl, cm_max_wvl
 from pycoxmunk.CM_Shared_Wind import CMSharedWind
 from pycoxmunk.CM_SceneGeom import CMSceneGeom
+from pycoxmunk.CM_PixMask import CMPixMask
 from copy import deepcopy
 import numpy as np
 import warnings
@@ -200,6 +201,7 @@ def calc_cox_munk_brdf_terms(in_refl: CM_Reflectance,
 def calc_cox_munk(band_wvl: float,
                   geom_info: CMSceneGeom,
                   wind_info: CMSharedWind,
+                  pix_mask: CMPixMask,
                   oc_cci_data=None) -> CM_Reflectance:
     """Compute the bidirectional reflectance from scene information using the Cox-Munk approach.
     Currently this uses only the band central wavelength, not spectral response, and doesn't include the
