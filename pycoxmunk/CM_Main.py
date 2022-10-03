@@ -137,6 +137,16 @@ class PyCoxMunk:
         self.shared_wind = CMSharedWind(self.geometry, u10, v10)
 
     def retr_coxmunk_refl(self):
+        """Main function for computing the sea surface reflectance.
+
+        This uses data previously loaded including, if available, wind and ocean color
+        data to compute the reflectance using the approach described in Sayer (2010).
+        DOI: 10.5194/amt-3-813-2010
+
+        This accounts for white caps and Chlorophyll content (via Ocean Color). However,
+        it is designed for use over oceans and may give poor results in coastal regions,
+        lakes, and other water types.
+        """
         for band_id in self.band_names:
             out_band_id = f'cox_munk_refl_{band_id}'
             self.scn[out_band_id] = self.scn[band_id].copy()
