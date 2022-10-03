@@ -17,6 +17,7 @@
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Test the scene geometry module."""
 from pycoxmunk import CM_Utils
+import xarray as xrd
 from unittest import mock
 import numpy as np
 import unittest
@@ -28,6 +29,7 @@ class TestUtils(unittest.TestCase):
         CM_Utils.check_type(1., 'test')
         CM_Utils.check_type(np.array([1.]), 'test')
         CM_Utils.check_type(np.array([1]), 'test')
+        CM_Utils.check_type(xrd.DataArray(np.array([1])), 'test')
         with self.assertRaises(TypeError):
             CM_Utils.check_type([1.], 'test')
         with self.assertRaises(TypeError):

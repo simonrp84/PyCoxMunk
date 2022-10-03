@@ -85,6 +85,12 @@ class TestSceneGeom(unittest.TestCase):
             test_scn['VIS006'] = xr.DataArray(np.array([[5., 4.], [4., 5.]]))
             cm_calcangles(test_scn, 'VIS008')
 
+        # Check error is raised if angles can't be computed
+        with self.assertRaises(ValueError):
+            get_sun.side_effect = ValueError("Bad data")
+            cm_calcangles(test_scn, 'VIS006')
+
+
     def test_shapechecker(self):
         """Tests for the shape checker that ensures arrays are same size."""
         # Default case
