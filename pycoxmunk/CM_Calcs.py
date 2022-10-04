@@ -201,7 +201,6 @@ def calc_cox_munk_brdf_terms(in_refl: CM_Reflectance,
 def calc_cox_munk(band_wvl: float,
                   geom_info: CMSceneGeom,
                   wind_info: CMSharedWind,
-                  pix_mask: CMPixMask = CMPixMask(),
                   oc_cci_data=None) -> CM_Reflectance:
     """Compute the bidirectional reflectance from scene information using the Cox-Munk approach.
     Currently this uses only the band central wavelength, not spectral response, and doesn't include the
@@ -211,7 +210,7 @@ def calc_cox_munk(band_wvl: float,
       - band_wvl: Float, central wavelength of the band being processed.
       - geom_info: CMSceneGeom, the scene geometry.
       - wind_info: CMSharedWind, the wind-based information for the scene.
-      - pix_mask: CMPixMask, the pixel masks for the Scen
+      - pix_mask: CMPixMask, the pixel masks for the Scene
       - oc_cci_data: None, placeholder for when this data is used.
     Returns:
       - coxmunk_data: CM_Reflectance, output reflectances and, if requested, BRDF components.

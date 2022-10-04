@@ -19,6 +19,7 @@
 from pyresample import create_area_def
 from datetime import datetime
 from pycoxmunk.CM_Main import PyCoxMunk
+from pycoxmunk.CM_PixMask import CMPixMask
 from unittest import mock
 from satpy import Scene
 import dask.array as da
@@ -176,6 +177,13 @@ class TestCMMain(unittest.TestCase):
 
         return cmr_mocker
 
+    def test_pixmask(self):
+        """Test that pixmask is correctly added to the class."""
+        pcm = PyCoxMunk(self.scn_good, self.good_bnd_names)
+        self.assertTrue(pcm.pixmask is None)
+        pcm.setup_pixmask('testing')
+        self.assertTrue(pcm.pixmask == 'testing')
+
     @mock.patch('pycoxmunk.CM_Main.calc_cox_munk')
     def test_retr_cm(self, mock_cmr_func):
         """Tests for the main routine that retrieves reflectance."""
@@ -188,7 +196,7 @@ class TestCMMain(unittest.TestCase):
         self.scn_good = self.create_test_scene(self.good_bnd_names, self.good_angle_names)
         mock_cmr_func.return_value = self._make_mocked_cm_refl()
         pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, mask_bad=False, do_brdf=False)
-        pcm.shared_wind = False
+        pcm.shared_wind = ['testval']
         pcm.retr_coxmunk_refl()
         np.testing.assert_allclose(pcm.scn[cm_band_name].data, self.tmp_cmr_array)
         self.assertFalse(cm_rho0v_name in pcm.scn)
@@ -223,6 +231,21 @@ class TestCMMain(unittest.TestCase):
         np.testing.assert_allclose(pcm.scn[cm_band_name].data, new_arr)
         self.assertTrue(cm_rho0v_name in pcm.scn)
         np.testing.assert_allclose(pcm.scn[cm_rho0v_name].data, new_arr * 4)
+
+        # Now set up secondary pixmask class
+        self.scn_good = self.create_test_scene(self.good_bnd_names, self.good_angle_names)
+        mock_cmr_func.return_value = self._make_mocked_cm_refl()
+        cmask = np.zeros((10, 10))
+        cmask[5, 5] = 1
+        pixmask = CMPixMask(cloud_mask=cmask)
+
+        pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, mask_bad=True, do_brdf=True)
+        pcm.setup_pixmask(pixmask)
+        pcm.retr_coxmunk_refl()
+        new_arr = self.tmp_cmr_array.copy()
+        new_arr[0, 0] = np.nan
+        new_arr[5, 5] = np.nan
+        np.testing.assert_allclose(pcm.scn[cm_band_name].data, new_arr)
 
 
 

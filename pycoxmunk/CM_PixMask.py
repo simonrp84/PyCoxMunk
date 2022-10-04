@@ -67,7 +67,6 @@ class CMPixMask:
             else:
                 self.mask = self.mask + mask
 
-
     def cut_high_zen(self, zeniths, threshold=80):
         """Create a mask for high solar or satellite zenith angles."""
 

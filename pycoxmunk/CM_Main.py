@@ -122,8 +122,13 @@ class PyCoxMunk:
                                     np.array(self.scn[self.angle_names['vaa']]),
                                     lats, lons)
 
-        # Initialise shared winds, not yet loaded
+        # Initialise shared winds and mask, not yet loaded
         self.shared_wind = None
+        self.pixmask = None
+
+    def setup_pixmask(self, pixmask):
+        """Add a pixel mask to the class."""
+        self.pixmask = pixmask
 
     def setup_wind(self, u10, v10):
         """Set up the fields that depend on wind speed.
@@ -154,6 +159,22 @@ class PyCoxMunk:
                                          self.geometry,
                                          self.shared_wind)
 
+            # Mask bad pixels
+            if self.mask_bad:
+                masker_rho = np.where(self.cm_refl.rho < - 0.5, np.nan, 1)
+                mlist = [masker_rho]
+
+                if self.pixmask is not None:
+                    pmask = np.where(self.pixmask.mask >= 1, np.nan, 1)
+                    mlist.append(pmask)
+                for masker in mlist:
+                    self.cm_refl.rho = self.cm_refl.rho * masker
+                    if self.do_brdf:
+                        self.cm_refl.rho_0d = self.cm_refl.rho_0d * masker
+                        self.cm_refl.rho_0v = self.cm_refl.rho_0v * masker
+                        self.cm_refl.rho_dd = self.cm_refl.rho_dd * masker
+                        self.cm_refl.rho_dv = self.cm_refl.rho_dv * masker
+
             self.scn[out_band_id].data = self.cm_refl.rho
 
             if self.do_brdf:
@@ -172,16 +193,6 @@ class PyCoxMunk:
                 out_band_id = f'cox_munk_rhodd_{band_id}'
                 self.scn[out_band_id] = self.scn[band_id].copy()
                 self.scn[out_band_id].data = self.cm_refl.rho_dd
-
-            # Mask bad pixels
-            if self.mask_bad:
-                masker_rho = np.where(self.cm_refl.rho < - 0.5)
-                self.cm_refl.rho[masker_rho] = np.nan
-                if self.do_brdf:
-                    self.cm_refl.rho_0d[masker_rho] = np.nan
-                    self.cm_refl.rho_0v[masker_rho] = np.nan
-                    self.cm_refl.rho_dd[masker_rho] = np.nan
-                    self.cm_refl.rho_dv[masker_rho] = np.nan
 
         if self.delete_when_done:
             if self.shared_wind:
