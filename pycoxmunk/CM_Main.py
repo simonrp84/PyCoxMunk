@@ -175,23 +175,23 @@ class PyCoxMunk:
 
             # Mask bad pixels
             if self.mask_bad:
-                masker_rho = np.argwhere(self.cm_refl.rho < - 0.5)
-                masker_sza = np.argwhere(self.geometry.sza >= self.geometry.zenith_max)
-                masker_vza = np.argwhere(self.geometry.vza >= self.geometry.zenith_max)
-
+                masker_rho = np.where(self.cm_refl.rho < - 0.5)
                 self.cm_refl.rho[masker_rho] = np.nan
-                self.cm_refl.rho[masker_sza] = np.nan
-                self.cm_refl.rho[masker_vza] = np.nan
                 if self.do_brdf:
-                    for masker in [masker_rho, masker_vza, masker_sza]:
-                        self.cm_refl.rho_0d[masker] = np.nan
-                        self.cm_refl.rho_0v[masker] = np.nan
-                        self.cm_refl.rho_dd[masker] = np.nan
-                        self.cm_refl.rho_dv[masker] = np.nan
+                    self.cm_refl.rho_0d[masker_rho] = np.nan
+                    self.cm_refl.rho_0v[masker_rho] = np.nan
+                    self.cm_refl.rho_dd[masker_rho] = np.nan
+                    self.cm_refl.rho_dv[masker_rho] = np.nan
 
         if self.delete_when_done:
-            del self.shared_wind
-            del self.geometry
-            del self.cm_refl.rhoul
-            del self.cm_refl.rhogl
-            del self.cm_refl.rhowc
+            if self.shared_wind:
+                del self.shared_wind
+            if self.geometry:
+                del self.geometry
+            if self.cm_refl:
+                if self.cm_refl.rhoul:
+                    del self.cm_refl.rhoul
+                if self.cm_refl.rhogl:
+                    del self.cm_refl.rhogl
+                if self.cm_refl.rhowc:
+                    del self.cm_refl.rhowc
