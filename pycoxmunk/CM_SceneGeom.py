@@ -82,6 +82,17 @@ class CMSceneGeom:
 
     """
 
+    def compute_additional(self):
+        """Compute some additional parameters not supplied by user."""
+        self.cos_sza = np.cos(np.deg2rad(self.sza))
+        self.cos_vza = np.cos(np.deg2rad(self.vza))
+
+        self.sin_sza = np.sin(np.deg2rad(self.sza))
+        self.sin_vza = np.sin(np.deg2rad(self.vza))
+
+        self.cos_raa = np.cos(np.deg2rad(self.raa))
+        self.sin_raa = np.sin(np.deg2rad(self.raa))
+
     def __init__(self, sza, saa, vza, vaa, lats, lons, raa=None,
                  zenith_min=0., zenith_max=85.,
                  azimuth_min=0., azimuth_max=360.,
@@ -89,6 +100,15 @@ class CMSceneGeom:
                  lat_min=-90., lat_max=90.,
                  lon_min=-180., lon_max=180.,
                  check_raa=False, fix_angs=True):
+
+        # Init some parameters
+        self.cos_sza = None
+        self.cos_vza = None
+        self.sin_sza = None
+        self.sin_vza = None
+        self.cos_raa = None
+        self.sin_raa = None
+
         # Solar zenith angles
         self.sza = check_type(sza, "Solar zenith angles")
         # Solar azimuth angles
@@ -137,14 +157,7 @@ class CMSceneGeom:
             self.check_angle_bounds(check_raa=True, fix=fix_angs)
 
         # Compute additional parameters
-        self.cos_sza = np.cos(np.deg2rad(self.sza))
-        self.cos_vza = np.cos(np.deg2rad(self.vza))
-
-        self.sin_sza = np.sin(np.deg2rad(self.sza))
-        self.sin_vza = np.sin(np.deg2rad(self.vza))
-
-        self.cos_raa = np.cos(np.deg2rad(self.raa))
-        self.sin_raa = np.sin(np.deg2rad(self.raa))
+        self.compute_additional()
 
     def check_array_shapes(self):
         """Ensure that input arrays have same shape as each other."""

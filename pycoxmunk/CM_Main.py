@@ -158,7 +158,6 @@ class PyCoxMunk:
             self.cm_refl = calc_cox_munk(self.scn[band_id].attrs['wavelength'].central,
                                          self.geometry,
                                          self.shared_wind)
-
             # Mask bad pixels
             if self.mask_bad:
                 masker_rho = np.where(self.cm_refl.rho < - 0.5, np.nan, 1)

@@ -104,7 +104,7 @@ def gauss_leg_quadx(n, x1, x2):
 
         ii = ii - 1
 
-    return w, x
+    return x, w
 
 
 def check_and_reshape(arr, good_shape):
@@ -119,7 +119,7 @@ def check_and_reshape(arr, good_shape):
 def check_type(in_val, var_typ):
     """Check that input variable is correct type.
     All inputs should be numpy array or a float."""
-    if type(in_val) == float:
+    if type(in_val) == float or type(in_val) == np.float64:
         return np.array([in_val])
     elif type(in_val) == np.ndarray:
         return in_val

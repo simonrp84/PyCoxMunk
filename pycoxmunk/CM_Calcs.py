@@ -17,13 +17,15 @@
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Class for the Scene wind and sea surface information."""
 
-from pycoxmunk.CM_Constants import CM_DATA_DICT, WaterData, chlconc, n_air, dither_more, cm_min_wvl, cm_max_wvl
+from pycoxmunk.CM_Constants import CM_DATA_DICT, WaterData, chlconc, n_air, dither_more, \
+    cm_min_wvl, cm_max_wvl, n_quad_theta, n_quad_phi
 from pycoxmunk.CM_Shared_Wind import CMSharedWind
 from pycoxmunk.CM_SceneGeom import CMSceneGeom
-from pycoxmunk.CM_PixMask import CMPixMask
+from pycoxmunk.CM_Utils import gauss_leg_quadx
 from copy import deepcopy
 import numpy as np
 import warnings
+import copy
 
 
 class CM_Reflectance:
@@ -192,10 +194,89 @@ def calc_cox_munk_brdf_terms(in_refl: CM_Reflectance,
                              oc_cci_data=None) -> CM_Reflectance:
     """Compute the BRDF terms for the sea surface reflectance.
     These terms are:
-     - rho_0v:
-     - rho_0d:
-     - rho_dv:
-     - rho_dd: """
+     - rho_0v: Solar beam to satellite view reflectances
+     - rho_0d: Solar beam to diffuse reflectances
+     - rho_dv: Diffuse to satellite view reflectances
+     - rho_dd: Diffuse to diffuse reflectances
+    Inputs:
+      - band_wvl: Float, central wavelength of the band being processed.
+      - geom_info: CMSceneGeom, the scene geometry.
+      - wind_info: CMSharedWind, the wind-based information for the scene.
+      - pix_mask: CMPixMask, the pixel masks for the Scene
+      - oc_cci_data: None, placeholder for when this data is used.
+    Returns:
+      - coxmunk_data: CM_Reflectance, output reflectances and, if requested, BRDF components.
+     """
+
+    qx_theta, qw_theta = gauss_leg_quadx(n_quad_theta, 0., np.pi / 2.)
+    qx_phi, qw_phi = gauss_leg_quadx(n_quad_phi, 0., 2. * np.pi)
+
+    qx_cos_sin_qw_theta = np.cos(qx_theta) * np.sin(qx_theta) * qw_theta
+
+    # The direct-direct term is simply the sea surface reflectance
+    # That has already been computed by `calc_cox_munk`
+    in_refl.rho_0v = in_refl.rho.copy()
+
+    # Initialise remaining reflectances
+    in_refl.rho_0d = np.zeros_like(in_refl.rho.copy())
+    in_refl.rho_dv = np.zeros_like(in_refl.rho.copy())
+    in_refl.rho_dd = np.zeros_like(in_refl.rho.copy())
+
+    # Now do the direct-diffuse and diffuse-direct terms.
+    for j in range(0, n_quad_theta):
+        tmp_zen = np.full(wind_info.u10.shape, qx_theta[j])
+        aa1 = 0
+        aa2 = 0
+        for k in range(0, n_quad_phi):
+            tmp_raa = np.rad2deg(qx_phi[k])
+            tmp_geom = copy.deepcopy(geom_info)
+            tmp_geom2 = copy.deepcopy(geom_info)
+            tmp_geom.vza = tmp_zen
+            tmp_geom2.sza = tmp_zen
+            tmp_geom.raa = tmp_raa
+            tmp_geom2.raa = tmp_raa
+            # Need to recompute some angles.
+            tmp_geom.compute_additional()
+            tmp_geom2.compute_additional()
+
+            # Set up wind
+            tmp_wind = CMSharedWind(tmp_geom, wind_info.u10, wind_info.v10)
+            tmp_wind2 = CMSharedWind(tmp_geom2, wind_info.u10, wind_info.v10)
+
+            # Compute reflectances
+            tmp_cm_refl = calc_cox_munk(band_wvl, tmp_geom, tmp_wind, oc_cci_data)
+            tmp_cm_refl2 = calc_cox_munk(band_wvl, tmp_geom2, tmp_wind2, oc_cci_data)
+            aa1 = aa1 + tmp_cm_refl.rho * qw_phi[k]
+            aa2 = aa2 + tmp_cm_refl2.rho * qw_phi[k]
+
+        in_refl.rho_0d = in_refl.rho_0d + aa1 * qx_cos_sin_qw_theta[j]
+        in_refl.rho_dv = in_refl.rho_dv + aa2 * qx_cos_sin_qw_theta[j]
+
+    in_refl.rho_0d = in_refl.rho_0d / np.pi
+    in_refl.rho_dv = in_refl.rho_dv / np.pi
+
+    # Lastly, do the diffuse-diffuse term.
+    good_shape = wind_info.u10.shape
+    lats = np.full(good_shape, 0.)
+    for i in range(0, n_quad_theta):
+        a = 0
+        tmp_sol = np.full(good_shape, qx_theta[i])
+        for j in range(0, n_quad_theta):
+            a2 = 0
+            tmp_sat = np.full(good_shape, qx_theta[j])
+            for k in range(0, n_quad_phi):
+                tmp_rel = np.full(good_shape, qx_phi[k])
+                tmp_geom = CMSceneGeom(tmp_sol, 0., tmp_sat, tmp_rel, lats, lats)
+                tmp_wind = CMSharedWind(tmp_geom, wind_info.u10, wind_info.v10)
+                tmp_refl = calc_cox_munk(band_wvl, tmp_geom, tmp_wind, oc_cci_data)
+
+                a2 = a2 + tmp_refl.rho * qw_phi[k]
+        a = a + a2 * qx_cos_sin_qw_theta[j]
+        in_refl.rho_dd = in_refl.rho_dd + a * qx_cos_sin_qw_theta[i]
+
+    in_refl.rho_dd = in_refl.rho_dd * 2. / np.pi
+
+    return in_refl
 
 
 def calc_cox_munk(band_wvl: float,
@@ -203,7 +284,7 @@ def calc_cox_munk(band_wvl: float,
                   wind_info: CMSharedWind,
                   oc_cci_data=None) -> CM_Reflectance:
     """Compute the bidirectional reflectance from scene information using the Cox-Munk approach.
-    Currently this uses only the band central wavelength, not spectral response, and doesn't include the
+    Currently, this uses only the band central wavelength, not spectral response, and doesn't include the
     ability to process with Ocean Color CCI (or other ocean color) datasets.
     This is typically called from within the PyCoxMunk class but can be called directly by external code.
     Inputs:
@@ -263,6 +344,24 @@ def calc_cox_munk(band_wvl: float,
     rhogl = np.where(np.abs(wind_info.a > dither_more),
                      np.pi * wind_info.p * r_sf / wind_info.a, 0)
 
+    # Calculate overall reflectance
     rho = rhowc + (1 - wind_info.wcfrac) * (rhogl + rhoul)
+    # Add results to the output class
     coxmunk_data = CM_Reflectance(band_wvl, rho, rhowc, rhogl, rhoul, None, None, None, None)
+
+    return coxmunk_data
+
+
+def calc_coxmunk_wrapper(band_wvl: float,
+                         geom_info: CMSceneGeom,
+                         wind_info: CMSharedWind,
+                         oc_cci_data=None,
+                         do_brdf: bool = False) -> CM_Reflectance:
+    """Wrapper for the above functions that combines the C-M and BRDF calcs."""
+
+    # If we want to compute BRDF terms then call the correct function now.
+    coxmunk_data = calc_cox_munk(band_wvl, geom_info, wind_info, oc_cci_data)
+    if do_brdf:
+        coxmunk_data = calc_cox_munk_brdf_terms(coxmunk_data, band_wvl, geom_info, wind_info, oc_cci_data)
+
     return coxmunk_data

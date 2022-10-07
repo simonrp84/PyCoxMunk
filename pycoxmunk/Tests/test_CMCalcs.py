@@ -40,7 +40,7 @@ class TestCMCalcs(unittest.TestCase):
         self.lons = np.array([-116.184, 73.047, 120.744, -121.522])
 
         self.refl = CMCalcs.CM_Reflectance(cwvl=0.84,
-                                           rho=np.array([0.1, 1., 10.]))
+                                           rho=np.array([1., 10., 100.]))
         self.watprops = deepcopy(CM_DATA_DICT[0.47])
         self.watprops.chlabs = 0.0109369
         self.watprops.chlbsc = 0.01805958
@@ -187,7 +187,21 @@ class TestCMCalcs(unittest.TestCase):
 
     def test_calc_coxmunk_brdf(self):
         """Test calculation of the Cox-Munk BRDF parameters."""
-        CMCalcs.calc_cox_munk_brdf_terms(self.refl, 0.8, None, None, None)
+        mock_wind = mock.MagicMock()
+        mock_wind.u10 = np.array([10.])
+        mock_wind.v10 = np.array([-2.1])
+
+        geom = CMSceneGeom(10., 165.2, 58.23, 9.3, 12., -120.,)
+
+        exp_dv = np.array([0.63585471, 0.63585471, 0.63585471])
+        exp_0d = np.array([4.78758539, 4.78758539, 4.78758539])
+        exp_dd = np.array([0.33835524, 0.33835524, 0.33835524])
+
+        res = CMCalcs.calc_cox_munk_brdf_terms(self.refl, 0.8, geom, mock_wind, None)
+        np.testing.assert_allclose(self.refl.rho, res.rho_0v)
+        np.testing.assert_allclose(exp_dd, res.rho_dd)
+        np.testing.assert_allclose(exp_0d, res.rho_0d)
+        np.testing.assert_allclose(exp_dv, res.rho_dv)
 
     @mock.patch('pycoxmunk.CM_Calcs.compute_wavelength_specific_water_props')
     @mock.patch('pycoxmunk.CM_Calcs.run_oceancolor')
@@ -210,3 +224,17 @@ class TestCMCalcs(unittest.TestCase):
         np.testing.assert_almost_equal(exp_wc, ref_data.rhowc)
         np.testing.assert_almost_equal(exp_gl, ref_data.rhogl)
         np.testing.assert_almost_equal(exp_ul, ref_data.rhoul)
+
+    @mock.patch('pycoxmunk.CM_Calcs.calc_cox_munk')
+    @mock.patch('pycoxmunk.CM_Calcs.calc_cox_munk_brdf_terms')
+    def test_cm_wrapper(self, ccm_brdf, ccm):
+        """Test the wrapper function to ensure it makes calls correctly."""
+
+        # Case with no BRDF
+        CMCalcs.calc_coxmunk_wrapper(None, None, None, None, False)
+        self.assertTrue(ccm.called)
+        self.assertFalse(ccm_brdf.called)
+        # Case with BRDF
+        CMCalcs.calc_coxmunk_wrapper(None, None, None, None, True)
+        self.assertTrue(ccm.called)
+        self.assertTrue(ccm_brdf.called)

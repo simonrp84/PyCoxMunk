@@ -32,6 +32,10 @@ zeisse_coef = np.array([[1.6753e-3, -1.66517e-4, 2.03068e-5],
                         [-6.96112e-3, -55537e-3, 2.60686e-3],
                         [2.86324e-3, 1.86059e-3, -4.69589e-4]])
 
+# For the BRDF computations
+n_quad_theta = 4
+n_quad_phi = 4
+
 
 class WaterData:
     """A class for data about water at a given wavelength."""
