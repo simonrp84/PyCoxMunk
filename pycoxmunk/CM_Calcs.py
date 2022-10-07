@@ -55,7 +55,6 @@ def _compute_bands_to_use(cwvl):
     """
     wvl_keys = list(CM_DATA_DICT.keys())
     wvl_keys.sort()
-
     if cwvl <= cm_min_wvl or cwvl > cm_max_wvl:
         raise ValueError(f"Central wavelength must be between {cm_min_wvl} and {cm_max_wvl}.")
     if cwvl <= wvl_keys[0]:
@@ -360,6 +359,7 @@ def calc_coxmunk_wrapper(band_wvl: float,
     """Wrapper for the above functions that combines the C-M and BRDF calcs."""
 
     # If we want to compute BRDF terms then call the correct function now.
+    print("\n\n\n\HI\n\n\n")
     coxmunk_data = calc_cox_munk(band_wvl, geom_info, wind_info, oc_cci_data)
     if do_brdf:
         coxmunk_data = calc_cox_munk_brdf_terms(coxmunk_data, band_wvl, geom_info, wind_info, oc_cci_data)

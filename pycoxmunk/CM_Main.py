@@ -130,7 +130,6 @@ class PyCoxMunk:
     def setup_pixmask(self, cloud_mask=None, land_mask=None, sol_zen_mask=None, sat_zen_mask=None):
         """Add a pixel mask to the class."""
         self.pixmask = CMPixMask(cloud_mask, land_mask, sol_zen_mask, sat_zen_mask)
-        print(self.pixmask)
 
     def setup_wind(self, u10, v10):
         """Set up the fields that depend on wind speed.

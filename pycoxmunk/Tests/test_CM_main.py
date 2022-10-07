@@ -56,7 +56,7 @@ class TestCMMain(unittest.TestCase):
         return scn
 
     def setUp(self):
-        self.good_bnd_names = ['IR_108']
+        self.good_bnd_names = ['VIS006']
         self.missing_angle_names = {'sza': 'solar_zenith_angle',
                                     'vza': 'satellite_zenith_angle',
                                     'saa': 'solar_azimuth_angle'}
@@ -134,7 +134,7 @@ class TestCMMain(unittest.TestCase):
         mocker = mock.MagicMock()
         mocker_lalo = mock.MagicMock()
         mocker_lalo.attrs['area'].get_lonlats = self._get_lonlats
-        tmp_dict = {'IR_108': mocker_lalo,
+        tmp_dict = {'VIS006': mocker_lalo,
                     'solar_zenith_angle': np.array([10, 10]),
                     'satellite_zenith_angle': np.array([10, 10]),
                     'solar_azimuth_angle': np.array([10, 10]),
@@ -178,13 +178,13 @@ class TestCMMain(unittest.TestCase):
         return cmr_mocker
 
     def test_pixmask(self):
-        """Test that pixmask is correctly added to the class."""
+        """Test that pixmask is correctly initialised in the class."""
         pcm = PyCoxMunk(self.scn_good, self.good_bnd_names)
         self.assertTrue(pcm.pixmask is None)
-        pcm.setup_pixmask('testing')
-        self.assertTrue(pcm.pixmask == 'testing')
+        pcm.setup_pixmask(np.array([0, 0, 1]), np.array([2., 0, 0]), np.array([0., 0, 0]), np.array([1., 0, 1.]))
+        np.testing.assert_allclose(pcm.pixmask.mask, np.array([1, 0, 1]))
 
-    @mock.patch('pycoxmunk.CM_Main.calc_cox_munk')
+    @mock.patch('pycoxmunk.CM_Main.calc_coxmunk_wrapper')
     def test_retr_cm(self, mock_cmr_func):
         """Tests for the main routine that retrieves reflectance."""
 
@@ -237,10 +237,9 @@ class TestCMMain(unittest.TestCase):
         mock_cmr_func.return_value = self._make_mocked_cm_refl()
         cmask = np.zeros((10, 10))
         cmask[5, 5] = 1
-        pixmask = CMPixMask(cloud_mask=cmask)
 
         pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, mask_bad=True, do_brdf=True)
-        pcm.setup_pixmask(pixmask)
+        pcm.setup_pixmask(cloud_mask=cmask)
         pcm.retr_coxmunk_refl()
         new_arr = self.tmp_cmr_array.copy()
         new_arr[0, 0] = np.nan
