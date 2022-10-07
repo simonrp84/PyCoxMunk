@@ -17,8 +17,9 @@
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 
 from pycoxmunk.CM_SceneGeom import CMSceneGeom, cm_calcangles
-from pycoxmunk.CM_Calcs import calc_cox_munk, CM_Reflectance
+from pycoxmunk.CM_Calcs import calc_coxmunk_wrapper, CM_Reflectance
 from pycoxmunk.CM_Shared_Wind import CMSharedWind
+from pycoxmunk.CM_PixMask import CMPixMask
 from satpy import Scene
 import numpy as np
 
@@ -126,9 +127,10 @@ class PyCoxMunk:
         self.shared_wind = None
         self.pixmask = None
 
-    def setup_pixmask(self, pixmask):
+    def setup_pixmask(self, cloud_mask=None, land_mask=None, sol_zen_mask=None, sat_zen_mask=None):
         """Add a pixel mask to the class."""
-        self.pixmask = pixmask
+        self.pixmask = CMPixMask(cloud_mask, land_mask, sol_zen_mask, sat_zen_mask)
+        print(self.pixmask)
 
     def setup_wind(self, u10, v10):
         """Set up the fields that depend on wind speed.
@@ -155,24 +157,27 @@ class PyCoxMunk:
         for band_id in self.band_names:
             out_band_id = f'cox_munk_refl_{band_id}'
             self.scn[out_band_id] = self.scn[band_id].copy()
-            self.cm_refl = calc_cox_munk(self.scn[band_id].attrs['wavelength'].central,
-                                         self.geometry,
-                                         self.shared_wind)
+            self.cm_refl = calc_coxmunk_wrapper(self.scn[band_id].attrs['wavelength'].central,
+                                                self.geometry,
+                                                self.shared_wind,
+                                                oc_cci_data=None,
+                                                do_brdf=self.do_brdf)
             # Mask bad pixels
+            mlist = []
             if self.mask_bad:
                 masker_rho = np.where(self.cm_refl.rho < - 0.5, np.nan, 1)
                 mlist = [masker_rho]
 
-                if self.pixmask is not None:
-                    pmask = np.where(self.pixmask.mask >= 1, np.nan, 1)
-                    mlist.append(pmask)
-                for masker in mlist:
-                    self.cm_refl.rho = self.cm_refl.rho * masker
-                    if self.do_brdf:
-                        self.cm_refl.rho_0d = self.cm_refl.rho_0d * masker
-                        self.cm_refl.rho_0v = self.cm_refl.rho_0v * masker
-                        self.cm_refl.rho_dd = self.cm_refl.rho_dd * masker
-                        self.cm_refl.rho_dv = self.cm_refl.rho_dv * masker
+            if self.pixmask is not None:
+                pmask = np.where(self.pixmask.mask >= 1, np.nan, 1)
+                mlist.append(pmask)
+            for masker in mlist:
+                self.cm_refl.rho = self.cm_refl.rho * masker
+                if self.do_brdf:
+                    self.cm_refl.rho_0d = self.cm_refl.rho_0d * masker
+                    self.cm_refl.rho_0v = self.cm_refl.rho_0v * masker
+                    self.cm_refl.rho_dd = self.cm_refl.rho_dd * masker
+                    self.cm_refl.rho_dv = self.cm_refl.rho_dv * masker
 
             self.scn[out_band_id].data = self.cm_refl.rho
 
