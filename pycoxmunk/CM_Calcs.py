@@ -163,9 +163,8 @@ def run_oceancolor(water_data, oc_data=None):
 
         water_data.chlbsc = 0.02 * (0.5 - 0.25 * np.log10(chlconc)) * 0.55 / water_data.wavelength + 0.002
 
-        # Currently the below lines are disabled for compatibility with ORAC during testing
-        # water_data.total_backscat = water_data.base_backscat + water_data.chlbsc
-        # water_data.total_abs = water_data.base_abs + water_data.chlabs
+        water_data.total_backscat = water_data.base_backscat + water_data.chlbsc
+        water_data.total_abs = water_data.base_abs + water_data.chlabs
     else:
         raise NotImplementedError("PyCoxMunk currently does not support Ocean Color data!")
 
@@ -204,7 +203,7 @@ def calc_cox_munk_brdf_terms(in_refl: CM_Reflectance,
       - pix_mask: CMPixMask, the pixel masks for the Scene
       - oc_cci_data: None, placeholder for when this data is used.
     Returns:
-      - coxmunk_data: CM_Reflectance, output reflectances and, if requested, BRDF components.
+      - coxmunk_data: CM_Reflectance, output reflectances and BRDF components.
      """
 
     qx_theta, qw_theta = gauss_leg_quadx(n_quad_theta, 0., np.pi / 2.)
@@ -345,6 +344,7 @@ def calc_cox_munk(band_wvl: float,
 
     # Calculate overall reflectance
     rho = rhowc + (1 - wind_info.wcfrac) * (rhogl + rhoul)
+
     # Add results to the output class
     coxmunk_data = CM_Reflectance(band_wvl, rho, rhowc, rhogl, rhoul, None, None, None, None)
 

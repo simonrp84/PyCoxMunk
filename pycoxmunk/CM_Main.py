@@ -150,7 +150,7 @@ class PyCoxMunk:
         DOI: 10.5194/amt-3-813-2010
 
         This accounts for white caps and Chlorophyll content (via Ocean Color). However,
-        it is designed for use over oceans and may give poor results in coastal regions,
+        it is designed for use over open oceans and may give poor results in coastal regions,
         lakes, and other water types.
         """
         for band_id in self.band_names:
