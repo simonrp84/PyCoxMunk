@@ -198,14 +198,23 @@ class PyCoxMunk:
                 self.scn[out_band_id].data = self.cm_refl.rho_dd
 
         if self.delete_when_done:
-            if self.shared_wind:
+            try:
                 del self.shared_wind
-            if self.geometry:
+            except NameError:
+                pass
+            try:
                 del self.geometry
-            if self.cm_refl:
-                if self.cm_refl.rhoul:
-                    del self.cm_refl.rhoul
-                if self.cm_refl.rhogl:
-                    del self.cm_refl.rhogl
-                if self.cm_refl.rhowc:
-                    del self.cm_refl.rhowc
+            except NameError:
+                pass
+            try:
+                del self.cm_refl.rhoul
+            except NameError:
+                pass
+            try:
+                del self.cm_refl.rhogl
+            except NameError:
+                pass
+            try:
+                del self.cm_refl.rhowc
+            except NameError:
+                pass
