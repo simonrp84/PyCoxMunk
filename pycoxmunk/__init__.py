@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Copyright (c) 2020 Simon R Proud
+# Copyright (c) 2022 Simon R Proud
 #
 # This file is part of PyCoxMunk.
 #
@@ -15,5 +15,8 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
+
+
+"""For instructions on using pycoxmunk please see the documentation under the pycoxmunk.PyCoxMunk class."""
 
 from pycoxmunk.CM_Main import PyCoxMunk

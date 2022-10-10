@@ -25,7 +25,48 @@ import numpy as np
 
 
 class PyCoxMunk:
-    """The main class for the library, sets up and runs processing."""
+    """The main class for the library, sets up and runs processing.
+
+    This code will estimate the sea surface reflectance as-seen from a given satellite
+    instrument. It is closely integrated with the `satpy` library, which is used for reading
+    the original satellite data and to store the reflectance output.
+
+    To use, first load your data using a satpy Scene. Then, call this class giving the scene
+    as an argument together with a list of band names to be processed.
+    Optionally, you can provide an `oc_dir` that contains ocean color CCI files for use in estimating the
+    reflectance.
+    `angle_names` is optional and if used should be a dict of satellite and solar angle datasets within
+    the Scene. The form is:
+    ```
+    {'sza': 'sza_name', 'vza': 'vza_name', 'saa': 'saa_name', 'vaa': 'vaa_name'}
+    ```
+    Where `sza_name` is the name of the solar zenith angle dataset within the Scene, `vza_name` is for
+    the viewing zenith angle and `saa_name` plus `vaa_name` are the names of the solar and viewing azimuth
+    angle datasets respectively.
+    `do_brdf` is an optional argument to specify whether BRDF properties are calculated. This is
+    `False` by default.
+    `mask_bad` is optional and enables/disables masking data of bad quality, typically reflectance values
+    that are unphysically low. It is `True` by default.
+    `delete_when_done` is an optional boolean to specify whether intermediate datasets are deleted once
+    the sea surface reflectance is calculated. This can help reduce memory use and is `True` by default.
+
+    Once you have initialised this class, you can optionally add data masks with `setup_pixmask` and add
+    wind information, which improves accuracy of the estimated reflectance, with `setup_wind`.
+
+    The actual reflectances can then be computed with `retr_coxmunk_refl`. Results will then be available
+    in the `scn` variable.
+    Example:
+    ```
+    my_band = 'VIS800'
+
+    my_scn = satpy.Scene(some_file)
+    my_scn.load([my_band])
+    my_pcm = pycoxmunk.PyCoxMunk(my_scn, [my_band], do_brdf=True)
+    my_pcm.setup_wind(my_u10_wind, my_v10_wind)
+    my_pcm.retr_coxmunk_refl()
+
+    my_sea_refl = my_pcm.scn['cox_munk_refl_VIS800'].data
+    """
 
     def __init__(self, scn, band_names, oc_dir=None, angle_names=None,
                  do_brdf=False, mask_bad=True, delete_when_done=True):
@@ -128,14 +169,21 @@ class PyCoxMunk:
         self.pixmask = None
 
     def setup_pixmask(self, cloud_mask=None, land_mask=None, sol_zen_mask=None, sat_zen_mask=None):
-        """Add a pixel mask to the class."""
+        """Add a pixel mask to the class.
+        Inputs (all optional):
+        - cloud_mask: An array for masking clouds, any values > 0 are assumed cloudy and not processed.
+        - land_mask: An array for masking land pixels, any values > 0 are assumed cloudy and not processed.
+        - sol_zen_mask: An array for masking high solar zeniths, any values > 0 are assumed cloudy and not processed.
+        - sat_zen_mask: An array for masking high viewing zeniths, any values > 0 are assumed cloudy and not processed.
+        Zenith angle masks can be added post-creation by calling the `cut_high_zen` function in the PyCoxMunk.pixmask.
+        """
         self.pixmask = CMPixMask(cloud_mask, land_mask, sol_zen_mask, sat_zen_mask)
 
     def setup_wind(self, u10, v10):
         """Set up the fields that depend on wind speed.
         Inputs:
-          - u10: Float or np.ndarray, u-direction wind speed at 10m in m/s.
-          - v10: Float or np.ndarray, v-direction wind speed at 10m in m/s.
+          - u10: Float or darray, u-direction wind speed at 10m in m/s.
+          - v10: Float or array, v-direction wind speed at 10m in m/s.
         Returns:
           - self.shared_wind: CM_Shared_Wind class.
         """
