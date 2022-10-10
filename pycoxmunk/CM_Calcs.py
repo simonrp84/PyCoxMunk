@@ -359,7 +359,6 @@ def calc_coxmunk_wrapper(band_wvl: float,
     """Wrapper for the above functions that combines the C-M and BRDF calcs."""
 
     # If we want to compute BRDF terms then call the correct function now.
-    print("\n\n\n\HI\n\n\n")
     coxmunk_data = calc_cox_munk(band_wvl, geom_info, wind_info, oc_cci_data)
     if do_brdf:
         coxmunk_data = calc_cox_munk_brdf_terms(coxmunk_data, band_wvl, geom_info, wind_info, oc_cci_data)
