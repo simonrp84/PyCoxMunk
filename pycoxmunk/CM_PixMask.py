@@ -18,6 +18,7 @@
 """Class for the pixel mask information."""
 
 from pycoxmunk.CM_Utils import check_type
+import dask.array as da
 import numpy as np
 
 
@@ -55,9 +56,8 @@ class CMPixMask:
         self._check_and_add_mask(land_mask, "Land mask")
         self._check_and_add_mask(sol_zen_mask, "Solar zenith mask")
         self._check_and_add_mask(sat_zen_mask, "Satellite zenith mask")
-
         if self.mask is not None:
-            self.mask = np.where(self.mask > 0, 1, 0)
+            self.mask = da.where(self.mask > 0, 1, 0)
 
     def _check_and_add_mask(self, mask, mtype):
         if mask is not None:
@@ -72,13 +72,11 @@ class CMPixMask:
 
         # We take the absolute value here to simplify things.
         # Some datasets have zeniths in -90 to 90 range, others in 0 - 90+
-        tmp_mask = np.where(np.abs(zeniths) > threshold, 1, 0)
+        tmp_mask = da.where(np.abs(zeniths) > threshold, 1, 0)
         if self.mask is None:
             self.mask = tmp_mask
         else:
             self.mask = self.mask + tmp_mask
         if self.mask is not None:
-            self.mask = np.where(self.mask > 0, 1, 0)
-
-
+            self.mask = da.where(self.mask > 0, 1, 0)
 

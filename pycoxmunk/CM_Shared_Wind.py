@@ -20,6 +20,7 @@
 from pycoxmunk.CM_Utils import check_and_reshape, check_type
 from pycoxmunk.CM_SceneGeom import CMSceneGeom
 from pycoxmunk.CM_Constants import dither_more
+import dask.array as da
 import numpy as np
 
 
@@ -42,14 +43,14 @@ class CMSharedWind:
         """
         from pycoxmunk.CM_Constants import zeisse_coef as zc
 
-        tp = (theta - np.deg2rad(70)) / 5.
-        wp = 4. * np.log10(ws) / 1.30103
+        tp = (theta - da.deg2rad(70)) / 5.
+        wp = 4. * da.log10(ws) / 1.30103
 
         delta = (zc[0, 0] + (zc[1, 0] + zc[2, 0] * wp) * wp) + \
                 ((zc[0, 1] + (zc[1, 1] + zc[2, 1] * wp) * wp) +
                  (zc[0, 2] + (zc[1, 2] + zc[2, 2] * wp) * wp) * tp) * tp
 
-        ba = np.where((theta >= np.deg2rad(70)) & (ws > 1.), delta + cos_theta, cos_theta)
+        ba = da.where((theta >= da.deg2rad(70)) & (ws > 1.), delta + cos_theta, cos_theta)
 
         return ba
 
@@ -75,62 +76,62 @@ class CMSharedWind:
 
         # Calculate parameters
         # First 10m absolute wind speed
-        self.ws = np.sqrt(self.u10 * self.u10 + self.v10 * self.v10)
+        self.ws = da.sqrt(self.u10 * self.u10 + self.v10 * self.v10)
 
         # Wind direction
-        self.wd = np.arccos(self.v10 / self.ws)
+        self.wd = da.arccos(self.v10 / self.ws)
         # We want wind direction in -180 -> 180 range
-        self.wd = np.where(self.wd < 0, -self.wd, self.wd)
+        self.wd = da.where(self.wd < 0, -self.wd, self.wd)
 
         # Consistency check
-        self.wd = np.where(self.ws < 0, 0, self.wd)
-        self.ws = np.where(self.ws < 0, 0, self.ws)
+        self.wd = da.where(self.ws < 0, 0, self.wd)
+        self.ws = da.where(self.ws < 0, 0, self.ws)
 
         # White-cap fraction
-        self.wcfrac = 2.951e-6 * np.power(self.ws, 3.52)
-        self.wcfrac = np.where(self.wcfrac > 1, 1, self.wcfrac)
+        self.wcfrac = 2.951e-6 * da.power(self.ws, 3.52)
+        self.wcfrac = da.where(self.wcfrac > 1, 1, self.wcfrac)
 
         # Convert wind direction to be relative to solar azimuth
-        self.wd = self.wd - np.deg2rad(scenegeom.saa)
-        self.wd = np.where(self.wd < 0, 2 * np.pi + self.wd, self.wd)
+        self.wd = self.wd - da.deg2rad(scenegeom.saa)
+        self.wd = da.where(self.wd < 0, 2 * np.pi + self.wd, self.wd)
 
         # Angle between incident light and instrument with respect to
         # the sloping sea surface.
         self.cosomega = (scenegeom.cos_sza * scenegeom.cos_vza) + \
                         (scenegeom.sin_sza * scenegeom.sin_vza * scenegeom.cos_raa)
 
-        self.cosbeta = np.where(np.abs(self.cosomega) + 1. > dither_more,
-                                (scenegeom.cos_sza + scenegeom.cos_vza) / (np.sqrt(2 + 2 * self.cosomega)),
+        self.cosbeta = da.where(da.abs(self.cosomega) + 1. > dither_more,
+                                (scenegeom.cos_sza + scenegeom.cos_vza) / (da.sqrt(2 + 2 * self.cosomega)),
                                 0.)
 
-        self.w = 0.5 * np.arccos(self.cosomega)
-        self.sin_w = np.sin(self.w)
+        self.w = 0.5 * da.arccos(self.cosomega)
+        self.sin_w = da.sin(self.w)
 
         # Zeisse correction
-        self.ergodic = self.zeisse_ba(np.deg2rad(scenegeom.vza), scenegeom.cos_vza, self.ws)
-        self.a = 4 * scenegeom.cos_sza * self.ergodic * np.power(self.cosbeta, 4)
+        self.ergodic = self.zeisse_ba(da.deg2rad(scenegeom.vza), scenegeom.cos_vza, self.ws)
+        self.a = 4 * scenegeom.cos_sza * self.ergodic * da.power(self.cosbeta, 4)
 
         # Surface slopes
         self.dangle = scenegeom.cos_sza + scenegeom.cos_vza
 
-        self.Zx = np.where(self.dangle > dither_more,
+        self.Zx = da.where(self.dangle > dither_more,
                            -1. * (scenegeom.sin_vza * scenegeom.sin_raa) / self.dangle,
                            0.)
-        self.Zy = np.where(self.dangle > dither_more,
+        self.Zy = da.where(self.dangle > dither_more,
                            -1. * (scenegeom.sin_sza + scenegeom.sin_vza * scenegeom.cos_raa) / self.dangle,
                            0.)
 
-        self.cos_wd = np.cos(self.wd)
-        self.sin_wd = np.sin(self.wd)
+        self.cos_wd = da.cos(self.wd)
+        self.sin_wd = da.sin(self.wd)
 
         self.Zxprime = self.cos_wd * self.Zx + self.sin_wd * self.Zy
         self.Zyprime = -self.sin_wd * self.Zx + self.cos_wd * self.Zy
 
         # Coefficients for Cox-Munk
-        self.sigx = np.sqrt(0.003 + 0.00192 * self.ws)
-        self.sigy = np.sqrt(0.00316 * self.ws)
+        self.sigx = da.sqrt(0.003 + 0.00192 * self.ws)
+        self.sigy = da.sqrt(0.00316 * self.ws)
 
         self.zeta = self.Zxprime / self.sigx
         self.eta = self.Zyprime / self.sigy
 
-        self.p = np.exp(-0.5 * (self.zeta * self.zeta + self.eta * self.eta)) / (2. * np.pi * self.sigx * self.sigy)
+        self.p = da.exp(-0.5 * (self.zeta * self.zeta + self.eta * self.eta)) / (2. * np.pi * self.sigx * self.sigy)

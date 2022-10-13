@@ -133,7 +133,7 @@ class TestCMMain(unittest.TestCase):
         """Check that angle calculation is initialised correctly."""
         mocker = mock.MagicMock()
         mocker_lalo = mock.MagicMock()
-        mocker_lalo.attrs['area'].get_lonlats = self._get_lonlats
+        mocker_lalo.attrs['area'].get_lonlats_dask = self._get_lonlats
         tmp_dict = {'VIS006': mocker_lalo,
                     'solar_zenith_angle': np.array([10, 10]),
                     'satellite_zenith_angle': np.array([10, 10]),

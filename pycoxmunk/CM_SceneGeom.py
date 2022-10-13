@@ -18,6 +18,7 @@
 """Class for the Scene geometry information."""
 
 from pycoxmunk.CM_Utils import check_and_reshape, check_type
+import dask.array as da
 import numpy as np
 import warnings
 
@@ -84,14 +85,14 @@ class CMSceneGeom:
 
     def compute_additional(self):
         """Compute some additional parameters not supplied by user."""
-        self.cos_sza = np.cos(np.deg2rad(self.sza))
-        self.cos_vza = np.cos(np.deg2rad(self.vza))
+        self.cos_sza = da.cos(da.deg2rad(self.sza))
+        self.cos_vza = da.cos(da.deg2rad(self.vza))
 
-        self.sin_sza = np.sin(np.deg2rad(self.sza))
-        self.sin_vza = np.sin(np.deg2rad(self.vza))
+        self.sin_sza = da.sin(da.deg2rad(self.sza))
+        self.sin_vza = da.sin(da.deg2rad(self.vza))
 
-        self.cos_raa = np.cos(np.deg2rad(self.raa))
-        self.sin_raa = np.sin(np.deg2rad(self.raa))
+        self.cos_raa = da.cos(da.deg2rad(self.raa))
+        self.sin_raa = da.sin(da.deg2rad(self.raa))
 
     def __init__(self, sza, saa, vza, vaa, lats, lons, raa=None,
                  zenith_min=0., zenith_max=85.,
@@ -197,66 +198,66 @@ class CMSceneGeom:
         The optional fix argument allows user to explicitly set whether to
         attempt to fix bad angles (by normalising their range) or to raise an error."""
         # Solar zenith
-        self.sza = np.where(np.isinf(self.sza), np.nan, self.sza)
-        if np.any(self.sza < self.zenith_min) or np.any(self.sza >= self.zenith_max):
+        self.sza = da.where(da.isinf(self.sza), np.nan, self.sza)
+        if da.any(self.sza < self.zenith_min) or da.any(self.sza >= self.zenith_max):
             if fix:
                 warnings.warn("Some solar zenith values out of range. Clipping.")
-                self.sza = np.where(self.sza < self.zenith_min, self.zenith_min, self.sza)
-                self.sza = np.where(self.sza > self.zenith_max, self.zenith_max, self.sza)
+                self.sza = da.where(self.sza < self.zenith_min, self.zenith_min, self.sza)
+                self.sza = da.where(self.sza > self.zenith_max, self.zenith_max, self.sza)
             else:
                 raise ValueError("All solar zenith angles must be in the range " +
                                  str(self.zenith_min) + ' to ' + str(self.zenith_max))
         # Viewing zenith
-        self.vza = np.where(np.isinf(self.vza), np.nan, self.vza)
-        if np.any(self.vza < self.zenith_min) or np.any(self.vza >= self.zenith_max):
+        self.vza = da.where(da.isinf(self.vza), np.nan, self.vza)
+        if da.any(self.vza < self.zenith_min) or da.any(self.vza >= self.zenith_max):
             if fix:
                 warnings.warn("Some satellite zenith values out of range. Clipping.")
-                self.vza = np.where(self.vza < self.zenith_min, self.zenith_min, self.vza)
-                self.vza = np.where(self.vza > self.zenith_max, self.zenith_max, self.vza)
+                self.vza = da.where(self.vza < self.zenith_min, self.zenith_min, self.vza)
+                self.vza = da.where(self.vza > self.zenith_max, self.zenith_max, self.vza)
             else:
                 raise ValueError("All viewing zenith angles must be in the range " +
                                  str(self.zenith_min) + ' to ' + str(self.zenith_max))
         # Solar azimuth
-        self.saa = np.where(np.isinf(self.saa), np.nan, self.saa)
-        if np.any(self.saa < self.azimuth_min) or np.any(self.saa >= self.azimuth_max):
+        self.saa = da.where(da.isinf(self.saa), np.nan, self.saa)
+        if da.any(self.saa < self.azimuth_min) or da.any(self.saa >= self.azimuth_max):
             if fix:
                 warnings.warn("Some solar azimuth values out of range. Scaling.")
-                self.saa = np.where(self.saa > self.azimuth_max, self.saa - self.azimuth_max, self.saa)
-                self.saa = np.where(self.saa < self.azimuth_min, self.azimuth_max + self.saa, self.saa)
+                self.saa = da.where(self.saa > self.azimuth_max, self.saa - self.azimuth_max, self.saa)
+                self.saa = da.where(self.saa < self.azimuth_min, self.azimuth_max + self.saa, self.saa)
             else:
                 raise ValueError("All solar azimuth angles must be in the range " +
                                  str(self.azimuth_min) + ' to ' + str(self.azimuth_max))
         # Viewing azimuth
-        self.vaa = np.where(np.isinf(self.vaa), np.nan, self.vaa)
-        if np.any(self.vaa < self.azimuth_min) or np.any(self.vaa >= self.azimuth_max):
+        self.vaa = da.where(da.isinf(self.vaa), np.nan, self.vaa)
+        if da.any(self.vaa < self.azimuth_min) or da.any(self.vaa >= self.azimuth_max):
             if fix:
                 warnings.warn("Some satellite azimuth values out of range. Scaling.")
-                self.vaa = np.where(self.vaa > self.azimuth_max, self.vaa - self.azimuth_max, self.vaa)
-                self.vaa = np.where(self.vaa < self.azimuth_min, self.azimuth_max + self.vaa, self.vaa)
+                self.vaa = da.where(self.vaa > self.azimuth_max, self.vaa - self.azimuth_max, self.vaa)
+                self.vaa = da.where(self.vaa < self.azimuth_min, self.azimuth_max + self.vaa, self.vaa)
             else:
                 raise ValueError("All viewing azimuth angles must be in the range " +
                                  str(self.azimuth_min) + ' to ' + str(self.azimuth_max))
         # Latitudes
-        self.lats = np.where(np.isinf(self.lats), np.nan, self.lats)
-        if np.any(self.lats < self.lat_min) or np.any(self.lats >= self.lat_max):
+        self.lats = da.where(da.isinf(self.lats), np.nan, self.lats)
+        if da.any(self.lats < self.lat_min) or da.any(self.lats >= self.lat_max):
             raise ValueError("All latitudes must be in the range " +
                              str(self.lat_min) + ' to ' + str(self.lat_max))
         # Longitudes
-        self.lons = np.where(np.isinf(self.lons), np.nan, self.lons)
-        if np.any(self.lons < self.lon_min) or np.any(self.lons >= self.lon_max):
+        self.lons = da.where(da.isinf(self.lons), np.nan, self.lons)
+        if da.any(self.lons < self.lon_min) or da.any(self.lons >= self.lon_max):
             raise ValueError("All longitudes must be in the range " +
                              str(self.lon_min) + ' to ' + str(self.lon_max))
         # Relative azimuth
         if check_raa:
-            self.raa = np.where(np.isinf(self.raa), np.nan, self.raa)
-            if np.any(self.raa < self.relazi_min) or np.any(self.raa >= self.relazi_max):
+            self.raa = da.where(da.isinf(self.raa), np.nan, self.raa)
+            if da.any(self.raa < self.relazi_min) or da.any(self.raa >= self.relazi_max):
                 raise ValueError("All Relative azimuth angles must be in the range " +
                                  str(self.azimuth_min) + ' to ' + str(self.relazi_max))
 
     def calc_relazi(self):
         """Compute the relative azimuth angles from solar and viewing azimuths."""
-        raa = np.abs(self.vaa - self.saa)
+        raa = da.abs(self.vaa - self.saa)
 
         # If any RAA values are greater than 180, invert them.
-        raa = np.where(raa >= 180., 360. - raa, raa)
+        raa = da.where(raa >= 180., 360. - raa, raa)
         return raa

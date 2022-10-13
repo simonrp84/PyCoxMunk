@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License along with
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Utility functions used in multiple places in the code."""
+import dask.array as da_ar
 import xarray as xr
 import numpy as np
 
@@ -25,14 +26,14 @@ def _gauss_leg_point(n, i, ia, ib, da):
     """Compute a given Gauss-Legendre point."""
 
     db = (4 * i + 3) / ia * np.pi
-    y1 = np.cos(db + da / np.tan(db))
+    y1 = da_ar.cos(db + da / da_ar.tan(db))
 
     p2 = 0
 
     for looper in range(0, 100000):
         p2 = 0
         p1 = 1
-        for j in range(0, int(np.floor(n))):
+        for j in range(0, int(da_ar.floor(n))):
             p3 = p2
             p2 = p1
 
@@ -48,7 +49,7 @@ def _gauss_leg_point(n, i, ia, ib, da):
         db = p1 / p1p
         y1 = y2 - db * (1 + db * p1pp / (2 * p1p))
 
-        if np.abs(y1 - y2) < 3e-14:
+        if da_ar.abs(y1 - y2) < 3e-14:
             break
 
     return y1, p2
@@ -74,8 +75,8 @@ def gauss_leg_quadx(n, x1, x2):
     if n <= 0:
         raise ValueError("Gauss-Leg number of points must be greater than zero.")
 
-    x = np.zeros(int(np.floor(n)))
-    w = np.zeros(int(np.floor(n)))
+    x = da_ar.zeros(int(np.floor(n)))
+    w = da_ar.zeros(int(np.floor(n)))
 
     nn = (n + 1) / 2.
 
@@ -87,8 +88,8 @@ def gauss_leg_quadx(n, x1, x2):
     db = (x1 + x2) / 2.
     dc = (x2 - x1) / 2.
 
-    ii = int(np.floor(n-1))
-    for i in range(0, int(np.floor(nn))):
+    ii = int(da_ar.floor(n-1))
+    for i in range(0, int(da_ar.floor(nn))):
         y1, p2 = _gauss_leg_point(n, i, ia, ib, da)
 
         dd = dc * y1
@@ -110,7 +111,7 @@ def gauss_leg_quadx(n, x1, x2):
 def check_and_reshape(arr, good_shape):
     """If array is single value then scale to match other arrays."""
     if arr.shape == (1,):
-        arr = np.full(good_shape, arr[0])
+        arr = da_ar.full(good_shape, arr[0])
     elif arr.shape != good_shape:
         raise ValueError("Cannot resize array and sizes do not match.")
     return arr
@@ -120,10 +121,12 @@ def check_type(in_val, var_typ):
     """Check that input variable is correct type.
     All inputs should be numpy array or a float."""
     if type(in_val) == float or type(in_val) == np.float64:
-        return np.array([in_val])
-    elif type(in_val) == np.ndarray:
-        return in_val
-    elif (type(in_val)) == xr.DataArray:
+        return da_ar.array([in_val])
+    elif isinstance(in_val, np.ndarray):
+        return da_ar.array(in_val)
+    elif isinstance(in_val, xr.DataArray):
+        return da_ar.array(in_val)
+    elif isinstance(in_val, da_ar.Array):
         return in_val
     else:
         raise TypeError(f'{var_typ} must be a single float or numpy array! Got: {type(in_val)}')

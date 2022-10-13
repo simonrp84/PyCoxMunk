@@ -23,6 +23,7 @@ from pycoxmunk.CM_Shared_Wind import CMSharedWind
 from pycoxmunk.CM_SceneGeom import CMSceneGeom
 from pycoxmunk.CM_Utils import gauss_leg_quadx
 from copy import deepcopy
+import dask.array as da
 import numpy as np
 import warnings
 import copy
@@ -179,8 +180,8 @@ def _compute_abcd(first, second):
     d1 = np.tan(first + second)
 
     # Catch very small values to prevent division by zero
-    b1 = np.where(np.abs(b1) < dither_more, np.nan, b1)
-    d1 = np.where(np.abs(d1) < dither_more, np.nan, d1)
+    b1 = da.where(np.abs(b1) < dither_more, np.nan, b1)
+    d1 = da.where(np.abs(d1) < dither_more, np.nan, d1)
 
     return a1, b1, c1, d1
 
@@ -325,7 +326,7 @@ def calc_cox_munk(band_wvl: float,
 
     t_d = 1.0 - 0.5 * ((a1 * a1) / (b1 * b1) + (c1 * c1) / (d1 * d1))
     # Deal with the NaN values we potentially introduced
-    t_d = np.where(np.isnan(t_d), 0, t_d)
+    t_d = da.where(np.isnan(t_d), 0, t_d)
 
     # Combine surface transmission with underlight to give total underlight contribution
     rhoul = (t_u + t_d + refl_water) / (1.0 - r_u * refl_water)
@@ -336,10 +337,10 @@ def calc_cox_munk(band_wvl: float,
 
     r_sf = 1.0 - 0.5 * ((a1 * a1) / (b1 * b1) + (c1 * c1) / (d1 * d1))
     # Deal with the NaN values we potentially introduced
-    r_sf = np.where(np.isnan(r_sf), 0, r_sf)
+    r_sf = da.where(np.isnan(r_sf), 0, r_sf)
 
     # Calculate glint contribution
-    rhogl = np.where(np.abs(wind_info.a > dither_more),
+    rhogl = da.where(np.abs(wind_info.a > dither_more),
                      np.pi * wind_info.p * r_sf / wind_info.a, 0)
 
     # Calculate overall reflectance

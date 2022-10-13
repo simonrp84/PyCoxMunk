@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License along with
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Some constants used throughout the rest of the code."""
+import dask.array as da
 import numpy as np
 
 dither_more = 1e-5

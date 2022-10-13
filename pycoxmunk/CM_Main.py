@@ -21,6 +21,7 @@ from pycoxmunk.CM_Calcs import calc_coxmunk_wrapper, CM_Reflectance
 from pycoxmunk.CM_Shared_Wind import CMSharedWind
 from pycoxmunk.CM_PixMask import CMPixMask
 from satpy import Scene
+import dask.array as da
 import numpy as np
 
 
@@ -155,14 +156,14 @@ class PyCoxMunk:
         # dimensions! This means that high res bands (such as Himawari B03) must be resampled to
         # lower res band resolution before passing to PyCoxMunk. If you wish to process both
         # high and low res bands at native resolution then you must call PyCoxMunk multiple times.
-        lons, lats = self.scn[self.band_names[0]].attrs['area'].get_lonlats()
-        lons = np.array(lons)
-        lats = np.array(lats)
-        self.geometry = CMSceneGeom(np.array(self.scn[self.angle_names['sza']]),
-                                    np.array(self.scn[self.angle_names['saa']]),
-                                    np.array(self.scn[self.angle_names['vza']]),
-                                    np.array(self.scn[self.angle_names['vaa']]),
-                                    lats, lons)
+        lons, lats = self.scn[self.band_names[0]].attrs['area'].get_lonlats_dask()
+
+        self.geometry = CMSceneGeom(da.array(self.scn[self.angle_names['sza']]),
+                                    da.array(self.scn[self.angle_names['saa']]),
+                                    da.array(self.scn[self.angle_names['vza']]),
+                                    da.array(self.scn[self.angle_names['vaa']]),
+                                    da.array(lats),
+                                    da.array(lons))
 
         # Initialise shared winds and mask, not yet loaded
         self.shared_wind = None
@@ -177,7 +178,8 @@ class PyCoxMunk:
         - sat_zen_mask: An array for masking high viewing zeniths, any values > 0 are assumed cloudy and not processed.
         Zenith angle masks can be added post-creation by calling the `cut_high_zen` function in the PyCoxMunk.pixmask.
         """
-        self.pixmask = CMPixMask(cloud_mask, land_mask, sol_zen_mask, sat_zen_mask)
+        self.pixmask = CMPixMask(cloud_mask, land_mask,
+                                 sol_zen_mask, sat_zen_mask)
 
     def setup_wind(self, u10, v10):
         """Set up the fields that depend on wind speed.
@@ -212,11 +214,11 @@ class PyCoxMunk:
             # Mask bad pixels
             mlist = []
             if self.mask_bad:
-                masker_rho = np.where(self.cm_refl.rho < - 0.5, np.nan, 1)
+                masker_rho = da.where(self.cm_refl.rho < - 0.5, np.nan, 1)
                 mlist = [masker_rho]
 
             if self.pixmask is not None:
-                pmask = np.where(self.pixmask.mask >= 1, np.nan, 1)
+                pmask = da.where(self.pixmask.mask >= 1, np.nan, 1)
                 mlist.append(pmask)
             for masker in mlist:
                 self.cm_refl.rho = self.cm_refl.rho * masker
