@@ -16,13 +16,16 @@
 # You should have received a copy of the GNU General Public License along with
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Some constants used throughout the rest of the code."""
-import dask.array as da
 import numpy as np
 
 dither_more = 1e-5
 
 chlconc = 0.18
 
+# Approximate median chlorophyll - A concentration from GlobCOLOUR (mg / m3)
+chl_a_conc = 0.18
+
+# Refractive index of air.
 n_air = 1.00029
 
 # Absolute wavelength limits for algorithm
@@ -36,6 +39,7 @@ zeisse_coef = np.array([[1.6753e-3, -1.66517e-4, 2.03068e-5],
 # For the BRDF computations
 n_quad_theta = 4
 n_quad_phi = 4
+
 
 
 class WaterData:
@@ -71,12 +75,6 @@ class WaterData:
         self.chlabs = chlabs
         self.chlbsc = chlbsc
 
-
-# Approximate median chlorophyll - A concentration from GlobCOLOUR (mg / m3)
-chl_a_conc = 0.18
-
-# Refractive index of air
-n_air = 1.00029
 
 # Wavelength dependent coefficients.
 # Values are taken and / or computed from the sources indicated in Sayer et al., 2010.

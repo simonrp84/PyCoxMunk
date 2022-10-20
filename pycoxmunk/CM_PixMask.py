@@ -79,4 +79,3 @@ class CMPixMask:
             self.mask = self.mask + tmp_mask
         if self.mask is not None:
             self.mask = da.where(self.mask > 0, 1, 0)
-

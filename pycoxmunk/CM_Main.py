@@ -17,7 +17,7 @@
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 
 from pycoxmunk.CM_SceneGeom import CMSceneGeom, cm_calcangles
-from pycoxmunk.CM_Calcs import calc_coxmunk_wrapper, CM_Reflectance
+from pycoxmunk.CM_Calcs import calc_coxmunk_wrapper, CMReflectance
 from pycoxmunk.CM_Shared_Wind import CMSharedWind
 from pycoxmunk.CM_PixMask import CMPixMask
 from satpy import Scene
@@ -150,7 +150,7 @@ class PyCoxMunk:
                     raise KeyError(f"User-supplied angle dataset {bname} not in input scene!")
 
         # Cox Munk output class, used later
-        self.cm_refl = CM_Reflectance()
+        self.cm_refl = CMReflectance()
 
         # Compute longitudes and latitudes from first selected band. Assumes all bands are same
         # dimensions! This means that high res bands (such as Himawari B03) must be resampled to
@@ -191,6 +191,31 @@ class PyCoxMunk:
         """
 
         self.shared_wind = CMSharedWind(self.geometry, u10, v10)
+
+    def _run_delete(self):
+        """Delete unneeded data."""
+        if self.delete_when_done:
+            try:
+                del self.shared_wind
+            except (NameError, AttributeError):
+                pass
+            try:
+                del self.geometry
+            except (NameError, AttributeError):
+                pass
+            try:
+                del self.cm_refl.rhoul
+            except (NameError, AttributeError):
+                pass
+            try:
+                del self.cm_refl.rhogl
+            except (NameError, AttributeError):
+                pass
+            try:
+                del self.cm_refl.rhowc
+            except (NameError, AttributeError):
+                pass
+
 
     def retr_coxmunk_refl(self):
         """Main function for computing the sea surface reflectance.
@@ -247,24 +272,4 @@ class PyCoxMunk:
                 self.scn[out_band_id] = self.scn[band_id].copy()
                 self.scn[out_band_id].data = self.cm_refl.rho_dd
 
-        if self.delete_when_done:
-            try:
-                del self.shared_wind
-            except NameError:
-                pass
-            try:
-                del self.geometry
-            except NameError:
-                pass
-            try:
-                del self.cm_refl.rhoul
-            except NameError:
-                pass
-            try:
-                del self.cm_refl.rhogl
-            except NameError:
-                pass
-            try:
-                del self.cm_refl.rhowc
-            except NameError:
-                pass
+        self._run_delete()

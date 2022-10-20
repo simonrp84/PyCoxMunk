@@ -203,15 +203,6 @@ class TestCMMain(unittest.TestCase):
         with self.assertRaises(AttributeError):
             pcm.cm_refl.rhoul
 
-        # Test for case where we don't delete intermediate data
-        self.scn_good = self.create_test_scene(self.good_bnd_names, self.good_angle_names)
-        mock_cmr_func.return_value = self._make_mocked_cm_refl()
-        pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, mask_bad=False, do_brdf=False, delete_when_done=False)
-        pcm.retr_coxmunk_refl()
-        np.testing.assert_allclose(pcm.scn[cm_band_name].data, self.tmp_cmr_array)
-        self.assertFalse(cm_rho0v_name in pcm.scn)
-        pcm.cm_refl.rhoul
-
         # Now we test for case when we also want the BRDF
         self.scn_good = self.create_test_scene(self.good_bnd_names, self.good_angle_names)
         mock_cmr_func.return_value = self._make_mocked_cm_refl()
@@ -247,5 +238,45 @@ class TestCMMain(unittest.TestCase):
         np.testing.assert_allclose(pcm.scn[cm_band_name].data, new_arr)
 
 
+    @mock.patch('pycoxmunk.CM_Main.calc_coxmunk_wrapper')
+    def test_deleter(self, mock_cmr_func):
+        """Test that deletions are done correctly."""
 
+        cm_band_name = f'cox_munk_refl_{self.good_bnd_names[0]}'
+        cm_rho0v_name = f'cox_munk_rho0v_{self.good_bnd_names[0]}'
 
+        tmp_arr = np.array([1, 4., 64])
+
+        # Test for case where we don't delete intermediate data
+        self.scn_good = self.create_test_scene(self.good_bnd_names, self.good_angle_names)
+        mock_cmr_func.return_value = self._make_mocked_cm_refl()
+        pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, mask_bad=False, do_brdf=False, delete_when_done=False)
+        pcm.shared_wind = tmp_arr
+        pcm.geometry = 'geotest'
+        pcm.cm_refl.rhogl = True
+        pcm._run_delete()
+        self.assertEqual(pcm.geometry, 'geotest')
+        self.assertEqual(pcm.cm_refl.rhogl, True)
+        np.testing.assert_allclose(pcm.shared_wind, tmp_arr)
+
+        # Test for case where we delete intermediate data
+        self.scn_good = self.create_test_scene(self.good_bnd_names, self.good_angle_names)
+        mock_cmr_func.return_value = self._make_mocked_cm_refl()
+        pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, mask_bad=False, do_brdf=False, delete_when_done=True)
+        pcm.shared_wind = tmp_arr
+        pcm.geometry = 'geotest'
+        pcm._run_delete()
+        self.assertFalse(hasattr(pcm, 'geometry'))
+        self.assertFalse(hasattr(pcm.cm_refl, 'rhogl'))
+        self.assertFalse(hasattr(pcm, 'shared_wind'))
+
+        # Test for case where we delete intermediate data with some missing
+        self.scn_good = self.create_test_scene(self.good_bnd_names, self.good_angle_names)
+        mock_cmr_func.return_value = self._make_mocked_cm_refl()
+        pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, mask_bad=False, do_brdf=False, delete_when_done=True)
+        del pcm.shared_wind
+        del pcm.geometry
+        del pcm.cm_refl.rhogl
+        del pcm.cm_refl.rhoul
+        del pcm.cm_refl.rhowc
+        pcm._run_delete()

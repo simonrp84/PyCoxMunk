@@ -98,14 +98,16 @@ class TestSceneGeom(unittest.TestCase):
               self.vaa, self.lats, self.lons)
 
         # Mismatched arrays
-        with self.assertRaises(ValueError):
+        with self.assertRaises(AssertionError):
             Cm_sg(self.sza, self.saa, self.vza,
                   self.vaa, np.array([1., 2.]), self.lons)
 
         # One array, rest scalar
-        retr = Cm_sg(self.sza, 5., 3., -10., 15., -21.)
-        self.assertEqual(len(retr.sza), 4)
-        self.assertEqual(len(retr.saa), 4)
+        with mock.patch('pycoxmunk.CM_SceneGeom.CMSceneGeom.calc_relazi') as calc_func:
+            calc_func.return_value = 1.
+            retr = Cm_sg(self.sza, 5., 3., -10., 15., -21.)
+            self.assertEqual(len(retr.sza), 4)
+            self.assertEqual(retr.saa, 5.)
 
     def test_bounds_checker(self):
         """Ensure that bounds checks catch bad input data"""

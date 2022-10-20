@@ -39,7 +39,7 @@ class TestCMCalcs(unittest.TestCase):
         self.lats = np.array([-5.247, -58.473, 17.666, 48.237])
         self.lons = np.array([-116.184, 73.047, 120.744, -121.522])
 
-        self.refl = CMCalcs.CM_Reflectance(cwvl=0.84,
+        self.refl = CMCalcs.CMReflectance(cwvl=0.84,
                                            rho=np.array([1., 10., 100.]))
         self.watprops = deepcopy(CM_DATA_DICT[0.47])
         self.watprops.chlabs = 0.0109369
@@ -50,17 +50,17 @@ class TestCMCalcs(unittest.TestCase):
     def test_cmrefl(self):
         """Test the CM_Reflectance class."""
         with self.assertRaises(ValueError):
-            CMCalcs.CM_Reflectance(cwvl='1.3')
+            CMCalcs.CMReflectance(cwvl='1.3')
         with self.assertRaises(ValueError):
-            CMCalcs.CM_Reflectance(cwvl=1)
+            CMCalcs.CMReflectance(cwvl=1)
         with self.assertRaises(ValueError):
-            CMCalcs.CM_Reflectance(cwvl=[1., 2.])
+            CMCalcs.CMReflectance(cwvl=[1., 2.])
 
-        cmref = CMCalcs.CM_Reflectance(cwvl=1.3)
+        cmref = CMCalcs.CMReflectance(cwvl=1.3)
         self.assertEqual(1.3, cmref.cwvl)
         self.assertEqual(None, cmref.rhowc)
 
-        cmref = CMCalcs.CM_Reflectance(cwvl=1.3, rho=1.54, rhowc=12.3)
+        cmref = CMCalcs.CMReflectance(cwvl=1.3, rho=1.54, rhowc=12.3)
         self.assertEqual(1.54, cmref.rho)
         self.assertEqual(12.3, cmref.rhowc)
 
@@ -190,16 +190,15 @@ class TestCMCalcs(unittest.TestCase):
         mock_wind = mock.MagicMock()
         mock_wind.u10 = np.array([10.])
         mock_wind.v10 = np.array([-2.1])
-
-        geom = CMSceneGeom(10., 165.2, 58.23, 9.3, 12., -120.,)
+        geom = CMSceneGeom(10., np.array([[165.2, 123.1, 22.6], [34, 21.2, 170.4], [0.45, 128.89, 44.22]]),
+                           58.23, 9.3, 12., -120.,)
 
         exp_dv = np.array([0.63585471, 0.63585471, 0.63585471])
         exp_0d = np.array([4.78758539, 4.78758539, 4.78758539])
         exp_dd = np.array([0.355864, 0.355864, 0.355864])
-
         res = CMCalcs.calc_cox_munk_brdf_terms(self.refl, 0.8, geom, mock_wind, None)
         np.testing.assert_allclose(self.refl.rho, res.rho_0v)
-        print(f'res.rho_dd')
+        print(f'{res.rho_dd}')
         #np.testing.assert_allclose(exp_dd, res.rho_dd)
         #np.testing.assert_allclose(exp_0d, res.rho_0d)
         #np.testing.assert_allclose(exp_dv, res.rho_dv)

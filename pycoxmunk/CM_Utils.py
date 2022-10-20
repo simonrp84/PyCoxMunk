@@ -110,6 +110,8 @@ def gauss_leg_quadx(n, x1, x2):
 
 def check_and_reshape(arr, good_shape):
     """If array is single value then scale to match other arrays."""
+    if type(arr) is float:
+        return arr
     if arr.shape == (1,):
         arr = da_ar.full(good_shape, arr[0])
     elif arr.shape != good_shape:
@@ -120,8 +122,8 @@ def check_and_reshape(arr, good_shape):
 def check_type(in_val, var_typ):
     """Check that input variable is correct type.
     All inputs should be numpy array or a float."""
-    if type(in_val) == float or type(in_val) == np.float64:
-        return da_ar.array([in_val])
+    if type(in_val) == float or type(in_val) == np.float64 or type(in_val) == np.float:
+        return in_val
     elif isinstance(in_val, np.ndarray):
         return da_ar.array(in_val)
     elif isinstance(in_val, xr.DataArray):

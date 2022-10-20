@@ -24,12 +24,14 @@ from pycoxmunk.CM_SceneGeom import CMSceneGeom
 from pycoxmunk.CM_Utils import gauss_leg_quadx
 from copy import deepcopy
 import dask.array as da
+from numba import jit
 import numpy as np
+
 import warnings
 import copy
 
 
-class CM_Reflectance:
+class CMReflectance:
     def __init__(self, cwvl=None, rho=None, rhowc=None, rhogl=None, rhoul=None,
                  rho_0v=None, rho_0d=None, rho_dv=None, rho_dd=None):
         """Class for holding the output Cox-Munk reflectances and BRDF."""
@@ -186,11 +188,222 @@ def _compute_abcd(first, second):
     return a1, b1, c1, d1
 
 
-def calc_cox_munk_brdf_terms(in_refl: CM_Reflectance,
+def _set_arr_bytype(inarr, outarr, idx1, idx2, idx3=None):
+    """Add data to an array based on type."""
+
+    if idx3 is None:
+        if type(inarr) == float:
+            outarr[:, :, idx1, idx2] = inarr
+        else:
+            outarr[:, :, idx1, idx2] = inarr[:, :]
+    else:
+        if type(inarr) == float:
+            outarr[:, :, idx1, idx2, idx3] = inarr
+        else:
+            outarr[:, :, idx1, idx2, idx3] = inarr[:, :]
+
+
+def _calc_0d_dv(in_refl: CMReflectance,
+                band_wvl: float,
+                geom_info: CMSceneGeom,
+                wind_info: CMSharedWind,
+                water_data,
+                oc_cci_data=None, ) -> CMReflectance:
+    """Compute the 0d and dv terms."""
+    qx_theta, qw_theta = gauss_leg_quadx(n_quad_theta, 0., np.pi / 2.)
+    qx_phi, qw_phi = gauss_leg_quadx(n_quad_phi, 0., 2. * np.pi)
+    qx_cos_sin_qw_theta = np.cos(qx_theta) * np.sin(qx_theta) * qw_theta
+
+    # Need to initialise various values first
+    tmp_geom = copy.deepcopy(geom_info)
+    tmp_geom2 = copy.deepcopy(geom_info)
+
+    tmp_saa = da.zeros((in_refl.rho.shape[0], in_refl.rho.shape[0], n_quad_theta, n_quad_phi))
+    tmp_vaa = da.zeros_like(tmp_saa)
+    tmp_sza = da.zeros_like(tmp_saa)
+    tmp_vza = da.zeros_like(tmp_saa)
+    tmp_raa = da.zeros_like(tmp_saa)
+    tmp_sza2 = da.zeros_like(tmp_saa)
+    tmp_vza2 = da.zeros_like(tmp_saa)
+
+    tmp_u10 = da.zeros_like(tmp_saa)
+    tmp_v10 = da.zeros_like(tmp_saa)
+
+    for j in range(0, n_quad_theta):
+        for k in range(0, n_quad_phi):
+            _set_arr_bytype(geom_info.saa, tmp_saa, j, k)
+            _set_arr_bytype(geom_info.vaa, tmp_vaa, j, k)
+            _set_arr_bytype(geom_info.sza, tmp_sza, j, k)
+            _set_arr_bytype(geom_info.vza, tmp_vza, j, k)
+
+            tmp_raa[:, :, j, k] = da.rad2deg(qx_phi[k])
+
+            tmp_vza[:, :, j, k] = da.rad2deg(qx_theta[j])
+
+            tmp_sza2[:, :, j, k] = da.rad2deg(qx_theta[j])
+
+            tmp_u10[:, :, j, k] = wind_info.u10
+            tmp_v10[:, :, j, k] = wind_info.v10
+
+    tmp_geom.sza = tmp_sza
+    tmp_geom.vza = tmp_vza
+    tmp_geom.vaa = tmp_vaa
+    tmp_geom.saa = tmp_saa
+    tmp_geom.raa = tmp_raa
+
+    tmp_geom2.sza = tmp_sza2
+    tmp_geom2.vza = tmp_vza2
+    tmp_geom2.vaa = tmp_vaa
+    tmp_geom2.saa = tmp_saa
+    tmp_geom2.raa = tmp_raa
+
+    tmp_geom.compute_additional()
+    tmp_geom2.compute_additional()
+
+    tmp_wind = CMSharedWind(tmp_geom, tmp_u10, tmp_v10)
+    tmp_wind2 = CMSharedWind(tmp_geom2, tmp_u10, tmp_v10)
+
+    # Now do the direct-diffuse and diffuse-direct terms.
+    # Need to recompute some angles.
+
+    # Compute reflectances
+    tmp_cm_refl = calc_cox_munk(band_wvl, tmp_geom, tmp_wind, oc_cci_data, water_data)
+    tmp_cm_refl2 = calc_cox_munk(band_wvl, tmp_geom2, tmp_wind2, oc_cci_data, water_data)
+
+    tmp_rho = da.map_blocks(_loop_od_ov,
+                            tmp_cm_refl.rho, tmp_cm_refl2.rho,
+                            qw_phi, qx_cos_sin_qw_theta,
+                            n_quad_theta,
+                            dtype=np.float32,
+                            chunks=(tmp_cm_refl.rho.chunks[0],
+                                    tmp_cm_refl.rho.chunks[1],
+                                    2,),
+                            drop_axis=3)
+
+    tmp_rho_0d = np.squeeze(tmp_rho[:, :, 0])
+    tmp_rho_dv = np.squeeze(tmp_rho[:, :, 1])
+    in_refl.rho_0d = tmp_rho_0d / np.pi
+    in_refl.rho_dv = tmp_rho_dv / np.pi
+
+    return in_refl
+
+
+@jit(parallel=True, nopython=True)
+def _loop_od_ov(rho: np.ndarray, rho2: np.ndarray,
+                qw_phi: np.ndarray, qx_cos_sin_qw_theta: np.ndarray,
+                nq_theta: int = 4, nq_phi: int = 4) -> np.ndarray:
+    """Loop over quad theta and phi."""
+
+    out_0d = np.zeros_like(rho[:, :, 0, 0])
+    out_dv = np.zeros_like(rho[:, :, 0, 0])
+
+    for j in range(0, nq_theta):
+        aa1 = np.zeros_like(rho[:, :, 0, 0])
+        aa2 = np.zeros_like(rho[:, :, 0, 0])
+        for k in range(0, nq_phi):
+            aa1 = aa1 + rho[:, :, j, k] * qw_phi[k]
+            aa2 = aa2 + rho2[:, :, j, k] * qw_phi[k]
+        out_0d = out_0d + aa1 * qx_cos_sin_qw_theta[j]
+        out_dv = out_dv + aa2 * qx_cos_sin_qw_theta[j]
+
+    tmp_rho = np.dstack((out_0d, out_dv))
+    return tmp_rho
+
+
+def _calc_dd(in_refl: CMReflectance,
+             band_wvl: float,
+             geom_info: CMSceneGeom,
+             wind_info: CMSharedWind,
+             water_data,
+             oc_cci_data=None, ) -> CMReflectance:
+    """Compute the dd term."""
+    qx_theta, qw_theta = gauss_leg_quadx(n_quad_theta, 0., np.pi / 2.)
+    qx_phi, qw_phi = gauss_leg_quadx(n_quad_phi, 0., 2. * np.pi)
+    qx_cos_sin_qw_theta = np.cos(qx_theta) * np.sin(qx_theta) * qw_theta
+
+    # Need to initialise various values first
+    tmp_geom = copy.deepcopy(geom_info)
+
+    tmp_saa = da.zeros((in_refl.rho.shape[0], in_refl.rho.shape[0], n_quad_theta, n_quad_theta, n_quad_phi))
+    tmp_vaa = da.zeros_like(tmp_saa)
+    tmp_sza = da.zeros_like(tmp_saa)
+    tmp_vza = da.zeros_like(tmp_saa)
+    tmp_raa = da.zeros_like(tmp_saa)
+
+    if type(wind_info.u10) is not float:
+        tmp_u10 = da.zeros((in_refl.rho.shape[0], in_refl.rho.shape[0], n_quad_theta, n_quad_theta, n_quad_phi))
+    if type(wind_info.v10) is not float:
+        tmp_v10 = da.zeros((in_refl.rho.shape[0], in_refl.rho.shape[0], n_quad_theta, n_quad_theta, n_quad_phi))
+
+    for i in range(0, n_quad_theta):
+        for j in range(0, n_quad_theta):
+            for k in range(0, n_quad_phi):
+                _set_arr_bytype(geom_info.saa, tmp_saa, i, j, k)
+                _set_arr_bytype(geom_info.vaa, tmp_vaa, i, j, k)
+                _set_arr_bytype(geom_info.sza, tmp_sza, i, j, k)
+                _set_arr_bytype(geom_info.vza, tmp_vza, i, j, k)
+
+                tmp_raa[:, :, i, j, k] = da.rad2deg(qx_phi[k])
+                tmp_vza[:, :, i, j, k] = da.rad2deg(qx_theta[j])
+                tmp_sza[:, :, i, j, k] = da.rad2deg(qx_theta[i])
+
+                tmp_u10[:, :, i, j, k] = wind_info.u10
+                tmp_v10[:, :, i, j, k] = wind_info.v10
+
+    tmp_geom.sza = tmp_sza
+    tmp_geom.vza = tmp_vza
+    tmp_geom.vaa = tmp_vaa
+    tmp_geom.saa = tmp_saa
+    tmp_geom.raa = tmp_raa
+
+    tmp_geom.compute_additional()
+
+    tmp_wind = CMSharedWind(tmp_geom, tmp_u10, tmp_v10)
+
+    # Now do the direct-diffuse and diffuse-direct terms.
+    # Need to recompute some angles.
+
+    # Compute reflectances
+    tmp_cm_refl = calc_cox_munk(band_wvl, tmp_geom, tmp_wind, oc_cci_data, water_data)
+    tmp_rho_dd = da.map_blocks(_loop_dd,
+                               tmp_cm_refl.rho,
+                               qw_phi, qx_cos_sin_qw_theta,
+                               n_quad_theta, n_quad_phi,
+                               dtype='f2',
+                               chunks=(tmp_cm_refl.rho.chunks[0],
+                                       tmp_cm_refl.rho.chunks[1]),
+                               drop_axis=[2, 3, 4, ])
+
+    in_refl.rho_dd = tmp_rho_dd * 2. / np.pi
+
+    return in_refl
+
+
+@jit(parallel=True, nopython=True)
+def _loop_dd(rho: np.ndarray,
+             qw_phi: np.ndarray, qx_cos_sin_qw_theta: np.ndarray,
+             nq_theta: int = 4, nq_phi: int = 4) -> np.ndarray:
+    """Loop over quad theta and phi."""
+
+    out_dd = np.zeros_like(rho[:, :, 0, 0, 0])
+
+    for i in range(0, nq_theta):
+        aa1 = np.zeros_like(rho[:, :, 0, 0, 0])
+        for j in range(0, nq_theta):
+            aa2 = np.zeros_like(rho[:, :, 0, 0, 0])
+            for k in range(0, nq_phi):
+                aa2 = aa2 + rho[:, :, i, j, k] * qw_phi[k]
+            aa1 = aa1 + aa2 * qx_cos_sin_qw_theta[j]
+        out_dd = out_dd + aa1 * qx_cos_sin_qw_theta[i]
+
+    return out_dd
+
+
+def calc_cox_munk_brdf_terms(in_refl: CMReflectance,
                              band_wvl: float,
                              geom_info: CMSceneGeom,
                              wind_info: CMSharedWind,
-                             oc_cci_data=None) -> CM_Reflectance:
+                             oc_cci_data=None) -> CMReflectance:
     """Compute the BRDF terms for the sea surface reflectance.
     These terms are:
      - rho_0v: Solar beam to satellite view reflectances
@@ -207,73 +420,24 @@ def calc_cox_munk_brdf_terms(in_refl: CM_Reflectance,
       - coxmunk_data: CM_Reflectance, output reflectances and BRDF components.
      """
 
-    qx_theta, qw_theta = gauss_leg_quadx(n_quad_theta, 0., np.pi / 2.)
-    qx_phi, qw_phi = gauss_leg_quadx(n_quad_phi, 0., 2. * np.pi)
+    # Initialise remaining reflectances
+    in_refl.rho_0d = da.zeros_like(in_refl.rho)
+    in_refl.rho_dv = da.zeros_like(in_refl.rho)
+    in_refl.rho_dd = da.zeros_like(in_refl.rho)
 
-    qx_cos_sin_qw_theta = np.cos(qx_theta) * np.sin(qx_theta) * qw_theta
+    # Get specific information about water properties at wavelength
+    water_data = compute_wavelength_specific_water_props(band_wvl, meth='interp')
+    # Apply ocean color CCI data (currently not available)
+    water_data = run_oceancolor(water_data, oc_cci_data)
 
     # The direct-direct term is simply the sea surface reflectance
     # That has already been computed by `calc_cox_munk`
     in_refl.rho_0v = in_refl.rho.copy()
 
-    # Initialise remaining reflectances
-    in_refl.rho_0d = np.zeros_like(in_refl.rho.copy())
-    in_refl.rho_dv = np.zeros_like(in_refl.rho.copy())
-    in_refl.rho_dd = np.zeros_like(in_refl.rho.copy())
-
-    # Now do the direct-diffuse and diffuse-direct terms.
-    for j in range(0, n_quad_theta):
-        tmp_zen = np.full(wind_info.u10.shape, qx_theta[j])
-        aa1 = 0
-        aa2 = 0
-        for k in range(0, n_quad_phi):
-            tmp_raa = np.rad2deg(qx_phi[k])
-            tmp_geom = copy.deepcopy(geom_info)
-            tmp_geom2 = copy.deepcopy(geom_info)
-            tmp_geom.vza = tmp_zen
-            tmp_geom2.sza = tmp_zen
-            tmp_geom.raa = tmp_raa
-            tmp_geom2.raa = tmp_raa
-            # Need to recompute some angles.
-            tmp_geom.compute_additional()
-            tmp_geom2.compute_additional()
-
-            # Set up wind
-            tmp_wind = CMSharedWind(tmp_geom, wind_info.u10, wind_info.v10)
-            tmp_wind2 = CMSharedWind(tmp_geom2, wind_info.u10, wind_info.v10)
-
-            # Compute reflectances
-            tmp_cm_refl = calc_cox_munk(band_wvl, tmp_geom, tmp_wind, oc_cci_data)
-            tmp_cm_refl2 = calc_cox_munk(band_wvl, tmp_geom2, tmp_wind2, oc_cci_data)
-            aa1 = aa1 + tmp_cm_refl.rho * qw_phi[k]
-            aa2 = aa2 + tmp_cm_refl2.rho * qw_phi[k]
-
-        in_refl.rho_0d = in_refl.rho_0d + aa1 * qx_cos_sin_qw_theta[j]
-        in_refl.rho_dv = in_refl.rho_dv + aa2 * qx_cos_sin_qw_theta[j]
-
-    in_refl.rho_0d = in_refl.rho_0d / np.pi
-    in_refl.rho_dv = in_refl.rho_dv / np.pi
+    in_refl = _calc_0d_dv(in_refl, band_wvl, geom_info, wind_info, water_data, oc_cci_data)
 
     # Lastly, do the diffuse-diffuse term.
-    good_shape = wind_info.u10.shape
-    lats = np.full(good_shape, 0.)
-    for i in range(0, n_quad_theta):
-        a = 0
-        tmp_sol = np.full(good_shape, qx_theta[i])
-        for j in range(0, n_quad_theta):
-            a2 = 0
-            tmp_sat = np.full(good_shape, qx_theta[j])
-            for k in range(0, n_quad_phi):
-                tmp_rel = np.full(good_shape, qx_phi[k])
-                tmp_geom = CMSceneGeom(tmp_sol, 0., tmp_sat, tmp_rel, lats, lats)
-                tmp_wind = CMSharedWind(tmp_geom, wind_info.u10, wind_info.v10)
-                tmp_refl = calc_cox_munk(band_wvl, tmp_geom, tmp_wind, oc_cci_data)
-
-                a2 = a2 + tmp_refl.rho * qw_phi[k]
-        a = a + a2 * qx_cos_sin_qw_theta[j]
-        in_refl.rho_dd = in_refl.rho_dd + a * qx_cos_sin_qw_theta[i]
-
-    in_refl.rho_dd = in_refl.rho_dd * 2. / np.pi
+    in_refl = _calc_dd(in_refl, band_wvl, geom_info, wind_info, water_data, oc_cci_data)
 
     return in_refl
 
@@ -281,7 +445,8 @@ def calc_cox_munk_brdf_terms(in_refl: CM_Reflectance,
 def calc_cox_munk(band_wvl: float,
                   geom_info: CMSceneGeom,
                   wind_info: CMSharedWind,
-                  oc_cci_data=None) -> CM_Reflectance:
+                  oc_cci_data=None,
+                  water_data=None) -> CMReflectance:
     """Compute the bidirectional reflectance from scene information using the Cox-Munk approach.
     Currently, this uses only the band central wavelength, not spectral response, and doesn't include the
     ability to process with Ocean Color CCI (or other ocean color) datasets.
@@ -292,15 +457,16 @@ def calc_cox_munk(band_wvl: float,
       - wind_info: CMSharedWind, the wind-based information for the scene.
       - pix_mask: CMPixMask, the pixel masks for the Scene
       - oc_cci_data: None, placeholder for when this data is used.
+      - water_data: None or WaterData, information about the water body spectrum.
     Returns:
       - coxmunk_data: CM_Reflectance, output reflectances and, if requested, BRDF components.
     """
 
     # Get specific information about water properties at wavelength
-    water_data = compute_wavelength_specific_water_props(band_wvl, meth='interp')
-
-    # Apply ocean color CCI data (currently not available)
-    water_data = run_oceancolor(water_data, oc_cci_data)
+    if water_data is None:
+        water_data = compute_wavelength_specific_water_props(band_wvl, meth='interp')
+        # Apply ocean color CCI data (currently not available)
+        water_data = run_oceancolor(water_data, oc_cci_data)
 
     # Calculate white cap reflectance
     rhowc = wind_info.wcfrac * water_data.whitecap_refl
@@ -337,17 +503,17 @@ def calc_cox_munk(band_wvl: float,
 
     r_sf = 1.0 - 0.5 * ((a1 * a1) / (b1 * b1) + (c1 * c1) / (d1 * d1))
     # Deal with the NaN values we potentially introduced
-    r_sf = da.where(np.isnan(r_sf), 0, r_sf)
+    r_sf = da.where(da.isnan(r_sf), 0, r_sf)
 
     # Calculate glint contribution
-    rhogl = da.where(np.abs(wind_info.a > dither_more),
+    rhogl = da.where(da.abs(wind_info.a) > dither_more,
                      np.pi * wind_info.p * r_sf / wind_info.a, 0)
 
     # Calculate overall reflectance
     rho = rhowc + (1 - wind_info.wcfrac) * (rhogl + rhoul)
 
     # Add results to the output class
-    coxmunk_data = CM_Reflectance(band_wvl, rho, rhowc, rhogl, rhoul, None, None, None, None)
+    coxmunk_data = CMReflectance(band_wvl, rho, rhowc, rhogl, rhoul, None, None, None, None)
 
     return coxmunk_data
 
@@ -356,7 +522,7 @@ def calc_coxmunk_wrapper(band_wvl: float,
                          geom_info: CMSceneGeom,
                          wind_info: CMSharedWind,
                          oc_cci_data=None,
-                         do_brdf: bool = False) -> CM_Reflectance:
+                         do_brdf: bool = False) -> CMReflectance:
     """Wrapper for the above functions that combines the C-M and BRDF calcs."""
 
     # If we want to compute BRDF terms then call the correct function now.

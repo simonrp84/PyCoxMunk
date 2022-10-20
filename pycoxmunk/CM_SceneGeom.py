@@ -110,18 +110,33 @@ class CMSceneGeom:
         self.cos_raa = None
         self.sin_raa = None
 
+        # Set up shape checking list
+        shp_chk = []
+
         # Solar zenith angles
         self.sza = check_type(sza, "Solar zenith angles")
+        if hasattr(self.sza, 'shape'):
+            shp_chk.append(self.sza.shape)
         # Solar azimuth angles
         self.saa = check_type(saa, "Solar azimuth angles")
+        if hasattr(self.saa, 'shape'):
+            shp_chk.append(self.saa.shape)
         # Viewing zenith angles
         self.vza = check_type(vza, "Viewing zenith angles")
+        if hasattr(self.vza, 'shape'):
+            shp_chk.append(self.vza.shape)
         # Viewing azimuth angles
         self.vaa = check_type(vaa, "Viewing azimuth angles")
+        if hasattr(self.vaa, 'shape'):
+            shp_chk.append(self.vaa.shape)
         # Latitudes
         self.lats = check_type(lats, "Latitudes")
+        if hasattr(self.lats, 'shape'):
+            shp_chk.append(self.lats.shape)
         # Longitudes
         self.lons = check_type(lons, "Longitudes")
+        if hasattr(self.lons, 'shape'):
+            shp_chk.append(self.lons.shape)
 
         # Set some limits for the angles and geolocation
         self.zenith_min = zenith_min
@@ -139,9 +154,6 @@ class CMSceneGeom:
         self.lon_min = lon_min
         self.lon_max = lon_max
 
-        # Check arrays are equal size or are single values
-        self.check_array_shapes()
-
         # Run checks to ensure values are within bounds
         self.check_angle_bounds(check_raa=False, fix=fix_angs)
 
@@ -149,9 +161,18 @@ class CMSceneGeom:
         # Can be provided by user or calculated internally
         if raa is not None:
             raa = check_type(raa, "Relative azimuth angles")
-            self.raa = check_and_reshape(raa, self.sza.shape)
+            try:
+                self.raa = check_and_reshape(raa, self.sza.shape)
+            except AttributeError:
+                assert type(raa) is float
+                self.raa = raa
         else:
             self.raa = self.calc_relazi()
+        if hasattr(self.raa, 'shape'):
+            shp_chk.append(self.raa.shape)
+
+        if len(shp_chk) > 0:
+            assert all(x == shp_chk[0] for x in shp_chk)
 
         # Check again with RAA
         if check_raa:
@@ -159,39 +180,6 @@ class CMSceneGeom:
 
         # Compute additional parameters
         self.compute_additional()
-
-    def check_array_shapes(self):
-        """Ensure that input arrays have same shape as each other."""
-        # First, find which variables are single values
-        in_arr = [self.sza, self.saa, self.vza, self.vaa, self.lats, self.lons]
-        arr_shapes = [in_arr[0].shape == (1,), in_arr[1].shape == (1,),
-                      in_arr[2].shape == (1,), in_arr[3].shape == (1,),
-                      in_arr[4].shape == (1,), in_arr[5].shape == (1,)]
-        # If everything is a single value, this is OK
-        if all(arr_shapes):
-            return
-        # If everything is an array, also OK but we need to check shapes
-        elif not any(arr_shapes):
-            # Assume SZA shape is the reference
-            good_shp = self.sza.shape
-            if (self.saa.shape != good_shp or
-                    self.vza.shape != good_shp or
-                    self.vaa.shape != good_shp or
-                    self.lats.shape != good_shp or
-                    self.lons.shape != good_shp):
-                raise ValueError("All input arrays must have identical shape or be single values.")
-        # If we have a mixture of single values and larger arrays
-        else:
-            good_shp = None
-            for i in range(0, len(in_arr)):
-                if not arr_shapes[i]:
-                    good_shp = in_arr[i].shape
-                    break
-            self.saa = check_and_reshape(self.saa, good_shp)
-            self.vza = check_and_reshape(self.vza, good_shp)
-            self.vaa = check_and_reshape(self.vaa, good_shp)
-            self.lats = check_and_reshape(self.lats, good_shp)
-            self.lons = check_and_reshape(self.lons, good_shp)
 
     def check_angle_bounds(self, fix=True, check_raa=True):
         """Ensure that zenith angles are in acceptable range.
@@ -207,6 +195,10 @@ class CMSceneGeom:
             else:
                 raise ValueError("All solar zenith angles must be in the range " +
                                  str(self.zenith_min) + ' to ' + str(self.zenith_max))
+        # Convert to float if single value
+        if self.sza.shape == () or self.sza.shape == (0,):
+            self.sza = float(self.sza)
+
         # Viewing zenith
         self.vza = da.where(da.isinf(self.vza), np.nan, self.vza)
         if da.any(self.vza < self.zenith_min) or da.any(self.vza >= self.zenith_max):
@@ -217,6 +209,10 @@ class CMSceneGeom:
             else:
                 raise ValueError("All viewing zenith angles must be in the range " +
                                  str(self.zenith_min) + ' to ' + str(self.zenith_max))
+        # Convert to float if single value
+        if self.vza.shape == () or self.vza.shape == (0,):
+            self.vza = float(self.vza)
+
         # Solar azimuth
         self.saa = da.where(da.isinf(self.saa), np.nan, self.saa)
         if da.any(self.saa < self.azimuth_min) or da.any(self.saa >= self.azimuth_max):
@@ -227,6 +223,10 @@ class CMSceneGeom:
             else:
                 raise ValueError("All solar azimuth angles must be in the range " +
                                  str(self.azimuth_min) + ' to ' + str(self.azimuth_max))
+        # Convert to float if single value
+        if self.saa.shape == () or self.saa.shape == (0,):
+            self.saa = float(self.saa)
+
         # Viewing azimuth
         self.vaa = da.where(da.isinf(self.vaa), np.nan, self.vaa)
         if da.any(self.vaa < self.azimuth_min) or da.any(self.vaa >= self.azimuth_max):
@@ -237,22 +237,38 @@ class CMSceneGeom:
             else:
                 raise ValueError("All viewing azimuth angles must be in the range " +
                                  str(self.azimuth_min) + ' to ' + str(self.azimuth_max))
+        # Convert to float if single value
+        if self.vaa.shape == () or self.vaa.shape == (0,):
+            self.vaa = float(self.vaa)
+
         # Latitudes
         self.lats = da.where(da.isinf(self.lats), np.nan, self.lats)
         if da.any(self.lats < self.lat_min) or da.any(self.lats >= self.lat_max):
             raise ValueError("All latitudes must be in the range " +
                              str(self.lat_min) + ' to ' + str(self.lat_max))
+        # Convert to float if single value
+        if self.lats.shape == () or self.lats.shape == (0,):
+            self.lats = float(self.lats)
+
         # Longitudes
         self.lons = da.where(da.isinf(self.lons), np.nan, self.lons)
         if da.any(self.lons < self.lon_min) or da.any(self.lons >= self.lon_max):
             raise ValueError("All longitudes must be in the range " +
                              str(self.lon_min) + ' to ' + str(self.lon_max))
+        # Convert to float if single value
+        if self.lons.shape == () or self.lons.shape == (0,):
+            self.lons = float(self.lons)
+
         # Relative azimuth
         if check_raa:
             self.raa = da.where(da.isinf(self.raa), np.nan, self.raa)
             if da.any(self.raa < self.relazi_min) or da.any(self.raa >= self.relazi_max):
                 raise ValueError("All Relative azimuth angles must be in the range " +
                                  str(self.azimuth_min) + ' to ' + str(self.relazi_max))
+            # Convert to float if single value
+            if self.raa.shape == () or self.raa.shape == (0,):
+                self.raa = float(self.raa)
+
 
     def calc_relazi(self):
         """Compute the relative azimuth angles from solar and viewing azimuths."""
