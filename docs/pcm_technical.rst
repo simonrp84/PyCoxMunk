@@ -165,6 +165,7 @@ The :math:`\rho_{0d}` and :math:`\rho_{dv}` terms use the actual solar or viewin
 simulate diffuse radiation by substituting the viewing or solar geometry with the Gauss-Legendre terms described above:
 
 .. code-block:: python
+
     def get_rho_od_dv():
         qx_qw_sincos = np.cos(gauss_leg_theta_abscissas) * np.sin(gauss_leg_theta_abscissas) * gauss_leg_theta_weights
 
