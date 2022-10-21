@@ -51,7 +51,6 @@ wind speeds in the ERA5 dataset have been found to produce best results.
 
 Calculation of water properties
 _______________________________
-
 Before performing the reflectance calculations we first compute the properties of the water being observed. Currently,
 this is done using fixed values from the literature (described in Sayer, 2010) but in future we plan to implement
 support for `ESA's Ocean Color CCI <https://climate.esa.int/en/projects/ocean-colour/>`_ data, which will enable more
@@ -81,7 +80,11 @@ The white cap fraction is defined by:
 .. math::
     {wc_{frac}} = 2.951x10^{-6} \cdot v_{wind}^{3.52}
 
-Next, the water body reflectance is calculated via:
+
+Calculation of water reflectance
+_______________________________
+
+Now, the water body reflectance is calculated via:
 
 .. math::
     \eta_{oc} = 0.5 \cdot \frac{base_{bsc}}{tot_{bsc}}
@@ -124,3 +127,59 @@ Finally, the total reflectance is calculated using:
 
 .. math::
     \rho = \rho_{wc} + (1 - wc_{frac}) \cdot (\rho_{gl} + \rho_{ul})
+
+
+
+Calculation of water reflectance
+_______________________________
+In addition to calculating the reflectance along the sun-surface-satellite path, `pycoxmunk` can also calculate the
+bidirectional reflectance terms. These comprise of the:
+ - :math:`\rho_{0v}`: Solar beam to satellite view reflectances
+ - :math:`\rho_{0d}`: Solar beam to diffuse reflectances
+ - :math:`\rho_{dv}`: Diffuse to satellite view reflectances
+ - :math:`\rho_{dd}`: Diffuse to diffuse reflectances
+
+Calculation of these terms is enabled optionally by the user at runtime and is disabled by default. The BRDF terms
+require significant additional computation and hence extend both the processing time and memory requirements
+for `pycoxmunk`.
+
+Internally, these terms are calculated by simulating the surface reflectance across a range of angles and summing the
+results to gain the direct and diffuse terms listed above. The surface reflectance is simulated using the terms
+described in the preceeding sections.
+
+The angles used in the calculation are computed using the
+`Gauss-Legendre n-point quadrature formula <https://doi.org/10.1016/C2013-0-10566-1>`_ and by default `pycoxmunk` uses
+four terms for both :math:`\theta` and :math:`\phi`. This can be altered within the `pycoxmunk` code by editing
+the ``n_quad_theta`` and ``n_quad_phi`` terms in ``CM_Constants.py``. In the future these will be user-configurable options.
+Note, however, that increasing either of these values will significantly increase runtime and memory use.
+
+The :math:`\rho_{0v}` term is simply the standard Cox-Munk sea surface reflectance, so no additional calculations are
+performed for this term.
+
+The :math:`\rho_{0d}` and :math:`\rho_{dv}` terms use the actual solar or viewing geometry (respectively) and then
+simulate diffuse radiation by substituting the viewing or solar geometry with the Gauss-Legendre terms described above:
+
+.. py:function:: get_rho_0d_dv
+
+    qx_qw_sincos = np.cos(gauss_leg_theta_abscissas) * np.sin(gauss_leg_theta_abscissas) * gauss_leg_theta_weights
+
+    # Loop over zeniths
+    for i in range(0, n_quad_theta):
+        cur_gl_zen = gauss_leg_theta_abscissas[i]
+        cur_gl_theta_w = gauss_leg_theta_weights[i]
+        tmp_0d = 0
+        tmp_dv = 0
+        # Loop over azimuths
+        for j in range(0, n_quad_phi):
+            cur_gl_azi = gauss_leg_phi_abscissas[i]
+            cur_gl_phi_w = gauss_leg_phi_weights[i]
+            # Compute the reflectances
+            tmp_0d = tmp_0d + calc_cox_munk_refl(sol_zen, sol_az, cur_gl_zen, cur_gl_azi) * cur_gl_phi_w
+            tmp_dv = tmp_dv + calc_cox_munk_refl(cur_gl_zen, cur_gl_azi, sat_zen, sat_azi) * cur_gl_phi_w
+
+        rho_0d = rho_0d + tmp_0d * qx_qw_sincos
+        rho_dv = rho_dv + tmp_dv * qx_qw_sincos
+
+    rho_0d = rho_0d / np.pi
+    rho_dv = rho_dv / np.pi
+
