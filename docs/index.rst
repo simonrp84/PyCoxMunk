@@ -34,12 +34,9 @@ New users should refer to the `quickstart <_PCM_Quickstart>`_ documentation, whi
 `API documentation <_PCM_API>`_ and the `technical description <_PCM_Technical>`_ of the correction method used in SMACPy.
 
 .. figure:: _img/CM_Overlay.jpg
-   An example of the pycoxmunk-derived sea surface reflectance overlaid upon a Meteosat Second Generation `natural color` image of the Earth.
-
-.. figure:: _img/CM_Overlay.jpg
    :class: with-border
 
-   This is the caption.
+   Simulated sea surface reflectance overlaid on a MSG/SEVIRI image. Data: EUMETSAT
 
 
 .. toctree::
