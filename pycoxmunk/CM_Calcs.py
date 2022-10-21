@@ -223,8 +223,7 @@ def _calc_0d_dv(in_refl: CMReflectance,
     tmp_sza = da.zeros_like(tmp_saa)
     tmp_vza = da.zeros_like(tmp_saa)
     tmp_raa = da.zeros_like(tmp_saa)
-    tmp_sza2 = da.zeros_like(tmp_saa)
-    tmp_vza2 = da.zeros_like(tmp_saa)
+    tmp_zen = da.zeros_like(tmp_saa)
 
     tmp_u10 = da.zeros_like(tmp_saa)
     tmp_v10 = da.zeros_like(tmp_saa)
@@ -238,21 +237,19 @@ def _calc_0d_dv(in_refl: CMReflectance,
 
             tmp_raa[:, :, j, k] = da.rad2deg(qx_phi[k])
 
-            tmp_vza[:, :, j, k] = da.rad2deg(qx_theta[j])
-
-            tmp_sza2[:, :, j, k] = da.rad2deg(qx_theta[j])
+            tmp_zen[:, :, j, k] = da.rad2deg(qx_theta[j])
 
             tmp_u10[:, :, j, k] = wind_info.u10
             tmp_v10[:, :, j, k] = wind_info.v10
 
     tmp_geom.sza = tmp_sza
-    tmp_geom.vza = tmp_vza
+    tmp_geom.vza = tmp_zen
     tmp_geom.vaa = tmp_vaa
     tmp_geom.saa = tmp_saa
     tmp_geom.raa = tmp_raa
 
-    tmp_geom2.sza = tmp_sza2
-    tmp_geom2.vza = tmp_vza2
+    tmp_geom2.sza = tmp_zen
+    tmp_geom2.vza = tmp_vza
     tmp_geom2.vaa = tmp_vaa
     tmp_geom2.saa = tmp_saa
     tmp_geom2.raa = tmp_raa
