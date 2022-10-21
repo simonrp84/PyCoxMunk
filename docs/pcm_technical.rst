@@ -62,8 +62,25 @@ Chlorophyll-A absorption and backscattering are computed via:
 .. math::
 
     {chl_{abs}} = coef_0 * ( 1 - e^{-1.61 * chl_{conc}}) + coef_1 * chl_{conc}
+.. math::
 
     {chl_{bsc}} = \frac{0.02 * ( 0.5 - 0.25 * log(chl_{conc})) * 0.55}{\lambda} + 0.002
 
-where :math:`coef_n` are predefined coefficients determined by wavelength and :math:`chl_{conc}` is the Chlorophyll
-concentration, which is currently a fixed value of 0.18
+where :math:`coef_n` are predefined coefficients extracted from the spectral properties library by wavelength
+and :math:`chl_{conc}` is the Chlorophyll concentration, which is currently a fixed value of 0.18.
+
+The total absorption and backscatter are then defined by:
+
+.. math::
+    {tot_{abs}} = base_{abs} + chl_{abs}
+.. math::
+    {tot_{bsc}} = base_{bsc} + chl_{bsc}
+
+Where :math:`base_{abs}` and :math:`base_{bsc}` are extracted from the spectral properties library by wavelength.
+
+The white cap fraction is defined by:
+
+.. math::
+    {wc_{frac}} = 2.951x10^{-6} * v_{wind}^{3.52}
+
+
