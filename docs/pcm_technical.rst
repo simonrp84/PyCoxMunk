@@ -116,7 +116,9 @@ Where:
 
 
 with :math:`\Theta` defined via:
-    :math:`cos(2\cdot\Theta) = cos(\theta_V)cos(\theta_s) + sin(\theta_v)sin(\theta_s)cos(\phi_r)`
+
+.. math::
+    cos(2\cdot\Theta) = cos(\theta_V)cos(\theta_s) + sin(\theta_v)sin(\theta_s)cos(\phi_r)`
 
 Finally, the total reflectance is calculated using:
 
