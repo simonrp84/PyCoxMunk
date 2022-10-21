@@ -6,7 +6,7 @@
 Welcome to pycoxmunk's documentation!
 ==================================
 pycoxmunk: A library for estimating sea surface reflectances
-__________________________________________________________
+____________________________________________________________
 
 `pycoxmunk` is a python library that estimates sea surface reflectance using the
 `Cox-Munk method <https://doi.org/10.5194/amt-3-813-2010>`_. It is designed for use in areas of open water and may

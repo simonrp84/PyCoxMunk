@@ -1,6 +1,6 @@
 .. _PCM_Technical:
 Details of the pycoxmunk algorithm
-=================
+==================================
 
 Introduction
 ------------
@@ -12,10 +12,10 @@ from photographs of sunglint. A more detailed description of the method as-appli
 
 The algorithm described here computes both the per-wavelength sea surface reflectance, :math:`\rho`, and the four
 bidirectional reflectance terms:
- - :math:`\rho_{0v}`: Solar beam to satellite view reflectances
- - :math:`\rho_{0d}`: Solar beam to diffuse reflectances
- - :math:`\rho_{dv}`: Diffuse to satellite view reflectances
- - :math:`\rho_{dd}`: Diffuse to diffuse reflectances
+- :math:`\rho_{0v}`: Solar beam to satellite view reflectances
+- :math:`\rho_{0d}`: Solar beam to diffuse reflectances
+- :math:`\rho_{dv}`: Diffuse to satellite view reflectances
+- :math:`\rho_{dd}`: Diffuse to diffuse reflectances
 
 To estimate the reflectances, `pycoxmunk` requires knowledge of the sun-satellite viewing geometry through the following
 angles:
@@ -82,7 +82,7 @@ The white cap fraction is defined by:
 
 
 Calculation of water reflectance
-_______________________________
+________________________________
 
 Now, the water body reflectance is calculated via:
 
@@ -114,6 +114,7 @@ Where:
     :math:`r_{sf}` is the Fresnel reflection coefficient and
 
     :math:`\beta` is the facet tilt defined by:
+
 .. math::
     cos(\beta) = \frac{cos(\theta_s) + cos(\theta_v)}{\sqrt{2 + 2 \cdot cos(2\cdot\Theta)}}
 
@@ -131,13 +132,17 @@ Finally, the total reflectance is calculated using:
 
 
 Calculation of water reflectance
-_______________________________
+________________________________
 In addition to calculating the reflectance along the sun-surface-satellite path, `pycoxmunk` can also calculate the
 bidirectional reflectance terms. These comprise of the:
- - :math:`\rho_{0v}`: Solar beam to satellite view reflectances
- - :math:`\rho_{0d}`: Solar beam to diffuse reflectances
- - :math:`\rho_{dv}`: Diffuse to satellite view reflectances
- - :math:`\rho_{dd}`: Diffuse to diffuse reflectances
+
+- :math:`\rho_{0v}`: Solar beam to satellite view reflectances
+
+- :math:`\rho_{0d}`: Solar beam to diffuse reflectances
+
+- :math:`\rho_{dv}`: Diffuse to satellite view reflectances
+
+- :math:`\rho_{dd}`: Diffuse to diffuse reflectances
 
 Calculation of these terms is enabled optionally by the user at runtime and is disabled by default. The BRDF terms
 require significant additional computation and hence extend both the processing time and memory requirements
@@ -159,27 +164,26 @@ performed for this term.
 The :math:`\rho_{0d}` and :math:`\rho_{dv}` terms use the actual solar or viewing geometry (respectively) and then
 simulate diffuse radiation by substituting the viewing or solar geometry with the Gauss-Legendre terms described above:
 
-.. py:function:: get_rho_0d_dv
+.. code-block:: python
+    def get_rho_od_dv():
+        qx_qw_sincos = np.cos(gauss_leg_theta_abscissas) * np.sin(gauss_leg_theta_abscissas) * gauss_leg_theta_weights
 
-    qx_qw_sincos = np.cos(gauss_leg_theta_abscissas) * np.sin(gauss_leg_theta_abscissas) * gauss_leg_theta_weights
+        # Loop over zeniths
+        for i in range(0, n_quad_theta):
+            cur_gl_zen = gauss_leg_theta_abscissas[i]
+            cur_gl_theta_w = gauss_leg_theta_weights[i]
+            tmp_0d = 0
+            tmp_dv = 0
+            # Loop over azimuths
+            for j in range(0, n_quad_phi):
+                cur_gl_azi = gauss_leg_phi_abscissas[i]
+                cur_gl_phi_w = gauss_leg_phi_weights[i]
+                # Compute the reflectances
+                tmp_0d = tmp_0d + calc_cox_munk_refl(sol_zen, sol_az, cur_gl_zen, cur_gl_azi) * cur_gl_phi_w
+                tmp_dv = tmp_dv + calc_cox_munk_refl(cur_gl_zen, cur_gl_azi, sat_zen, sat_azi) * cur_gl_phi_w
 
-    # Loop over zeniths
-    for i in range(0, n_quad_theta):
-        cur_gl_zen = gauss_leg_theta_abscissas[i]
-        cur_gl_theta_w = gauss_leg_theta_weights[i]
-        tmp_0d = 0
-        tmp_dv = 0
-        # Loop over azimuths
-        for j in range(0, n_quad_phi):
-            cur_gl_azi = gauss_leg_phi_abscissas[i]
-            cur_gl_phi_w = gauss_leg_phi_weights[i]
-            # Compute the reflectances
-            tmp_0d = tmp_0d + calc_cox_munk_refl(sol_zen, sol_az, cur_gl_zen, cur_gl_azi) * cur_gl_phi_w
-            tmp_dv = tmp_dv + calc_cox_munk_refl(cur_gl_zen, cur_gl_azi, sat_zen, sat_azi) * cur_gl_phi_w
+            rho_0d = rho_0d + tmp_0d * qx_qw_sincos
+            rho_dv = rho_dv + tmp_dv * qx_qw_sincos
 
-        rho_0d = rho_0d + tmp_0d * qx_qw_sincos
-        rho_dv = rho_dv + tmp_dv * qx_qw_sincos
-
-    rho_0d = rho_0d / np.pi
-    rho_dv = rho_dv / np.pi
-
+        rho_0d = rho_0d / np.pi
+        rho_dv = rho_dv / np.pi
