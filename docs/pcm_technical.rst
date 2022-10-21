@@ -114,6 +114,7 @@ Where:
 .. math::
     cos(\beta) = \frac{cos(\theta_s) + cos(\theta_v)}{\sqrt{2 + 2 \cdot cos(2\cdot\Theta)}}
 
+
 with :math:`\Theta` defined via:
     :math:`cos(2\cdot\Theta) = cos(\theta_V)cos(\theta_s) + sin(\theta_v)sin(\theta_s)cos(\phi_r)`
 
