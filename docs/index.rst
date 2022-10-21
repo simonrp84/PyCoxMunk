@@ -33,7 +33,7 @@ reports via the issues tab on the GitHub page.
 New users should refer to the `quickstart <_PCM_Quickstart>`_ documentation, while more advanced users can refer to the
 `API documentation <_PCM_API>`_ and the `technical description <_PCM_Technical>`_ of the correction method used in SMACPy.
 
-.. figure:: img/CM_Overlay.png
+.. figure:: _img/CM_Overlay.png
    :width: 400
    :alt: An example of the pycoxmunk-derived sea surface reflectance overlaid upon a Meteosat Second Generation `natural color` image of the Earth.
 
