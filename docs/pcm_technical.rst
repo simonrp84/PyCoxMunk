@@ -98,4 +98,21 @@ The underlight contribution to total water reflectance is given by:
 where :math:`t_u` is the upward transmission, defined as 0.52, :math:`t_d` is computed from the scene geometry (see
 Sayer, 2010 for more details) and :math:`r_u` is the upward reflectance, defined as 0.48.
 
+The sunglint reflectance is calculated by:
 
+.. math::
+    \rho_{gl} = \frac{\pi \cdot r_{sf} \cdot P_{slo}}{\beta}
+
+
+Where:
+    :math:`P{slo}` is the wave slope distribution
+.. math::
+    r_{sf} is the Fresnel reflection coefficient and
+    :math:`\beta` is the facet tilt defined by:
+.. math::
+    cos(\beta) = \frac{cos(\theta_s) + cos(\theta_v)}{\sqrt{2 + 2 \cdot cos(2\cdot\Theta)}}
+with :math:`\Theta` defined via: :math:`\Theta = cos(\theta_V)cos(\theta_s) + sin(\theta_v)sin(\theta_s)cos(\phi_r)
+
+Finally, the total reflectance is calculated using:
+.. math::
+    \rho = \rho_{wc} + (1 - wc_{frac}) \cdot (\rho_{gl} + \rho_{ul})

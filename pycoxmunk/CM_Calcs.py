@@ -497,7 +497,7 @@ def calc_cox_munk(band_wvl: float,
     # Combine surface transmission with underlight to give total underlight contribution
     rhoul = (t_u + t_d + refl_water) / (1.0 - r_u * refl_water)
 
-    # Now we can move on to calculate the actual reflectance, which is the actual Cox-Munk step
+    # Now we can move on to calculate the  reflectance, which is the actual Cox-Munk step
     wprime = np.arcsin((n_air * wind_info.sin_w) / water_data.refrac_real)
     a1, b1, c1, d1 = _compute_abcd(wind_info.w, wprime)
 
