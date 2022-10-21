@@ -1,5 +1,5 @@
 .. _PCM_API:
-Quickstart
+pycoxmunk API
 =================
 
 TBD

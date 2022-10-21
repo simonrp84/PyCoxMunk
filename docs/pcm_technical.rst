@@ -1,5 +1,5 @@
 .. _PCM_Technical:
-Quickstart
+pycoxmunk algorithm details
 =================
 
 TBD
