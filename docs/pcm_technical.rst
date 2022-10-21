@@ -105,14 +105,17 @@ The sunglint reflectance is calculated by:
 
 
 Where:
+
     :math:`P{slo}` is the wave slope distribution
-.. math::
-    r_{sf} is the Fresnel reflection coefficient and
+
+    :math:`r_{sf}` is the Fresnel reflection coefficient and
+
     :math:`\beta` is the facet tilt defined by:
 .. math::
     cos(\beta) = \frac{cos(\theta_s) + cos(\theta_v)}{\sqrt{2 + 2 \cdot cos(2\cdot\Theta)}}
 with :math:`\Theta` defined via: :math:`\Theta = cos(\theta_V)cos(\theta_s) + sin(\theta_v)sin(\theta_s)cos(\phi_r)
 
 Finally, the total reflectance is calculated using:
+
 .. math::
     \rho = \rho_{wc} + (1 - wc_{frac}) \cdot (\rho_{gl} + \rho_{ul})
