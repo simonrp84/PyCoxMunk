@@ -1,5 +1,5 @@
 .. _PCM_API:
-pycoxmunk API
+The pycoxmunk API
 =================
 
 TBD
