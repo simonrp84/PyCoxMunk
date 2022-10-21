@@ -60,9 +60,9 @@ a dynamic computation of water properties.
 Chlorophyll-A absorption and backscattering are computed via:
 
 .. math::
-    {chl_{abs}} = coef_0 * ( 1 - e^{-1.61 * chl_{conc}}) + coef_1 * chl_{conc}
+    {chl_{abs}} = coef_0 \cdot ( 1 - e^{-1.61 \cdot chl_{conc}}) + coef_1 \cdot chl_{conc}
 .. math::
-    {chl_{bsc}} = \frac{0.02 * ( 0.5 - 0.25 * log(chl_{conc})) * 0.55}{\lambda} + 0.002
+    {chl_{bsc}} = \frac{0.02 \cdot ( 0.5 - 0.25 \cdot log(chl_{conc})) \cdot 0.55}{\lambda} + 0.002
 
 where :math:`coef_n` are predefined coefficients extracted from the spectral properties library by wavelength
 and :math:`chl_{conc}` is the Chlorophyll concentration, which is currently a fixed value of 0.18.
@@ -79,21 +79,21 @@ Where :math:`base_{abs}` and :math:`base_{bsc}` are extracted from the spectral 
 The white cap fraction is defined by:
 
 .. math::
-    {wc_{frac}} = 2.951x10^{-6} \circ v_{wind}^{3.52}
+    {wc_{frac}} = 2.951x10^{-6} \cdot v_{wind}^{3.52}
 
 Next, the water body reflectance is calculated via:
 
 .. math::
-    \eta_{oc} = 0.5 * \frac{base_{bsc}}{tot_{bsc}}
+    \eta_{oc} = 0.5 \cdot \frac{base_{bsc}}{tot_{bsc}}
 .. math::
-    f = 0.6279 - (0.2227 * \eta_{oc}) - (0.00513 * \eta_{oc}) + (0.2465 * \eta_{oc} - 0.3119) * cos(\theta_s)
+    f = 0.6279 - (0.2227 \cdot \eta_{oc}) - (0.00513 \cdot \eta_{oc}) + (0.2465 \cdot \eta_{oc} - 0.3119) \cdot cos(\theta_s)
 .. math::
-    \rho_{water} = f * \frac{tot_{bsc}}{tot_{abs}}
+    \rho_{water} = f \cdot \frac{tot_{bsc}}{tot_{abs}}
 
 The underlight contribution to total water reflectance is given by:
 
 .. math::
-    \rho_{ul} = \frac{t_u + t_d + \rho_{water}}{1 - r_u * \rho_{water}}
+    \rho_{ul} = \frac{t_u + t_d + \rho_{water}}{1 - r_u \cdot \rho_{water}}
 
 where :math:`t_u` is the upward transmission, defined as 0.52, :math:`t_d` is computed from the scene geometry (see
 Sayer, 2010 for more details) and :math:`r_u` is the upward reflectance, defined as 0.48.
