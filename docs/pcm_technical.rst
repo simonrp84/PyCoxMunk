@@ -57,8 +57,13 @@ this is done using fixed values from the literature (described in Sayer, 2010) b
 support for `ESA's Ocean Color CCI <https://climate.esa.int/en/projects/ocean-colour/>`_ data, which will enable more
 a dynamic computation of water properties.
 
-Chlorophyll-A absorption is computed via:
+Chlorophyll-A absorption and backscattering are computed via:
 
 .. math::
 
-    {chl_{abs}} = coef_0 * ( 1 - e^{-1.61 * chl_{conc}})
+    {chl_{abs}} = coef_0 * ( 1 - e^{-1.61 * chl_{conc}}) + coef_1 * chl_{conc}
+
+    {chl_{bsc}} = \frac{0.02 * ( 0.5 - 0.25 * log(chl_{conc})) * 0.55}{\lambda} + 0.002
+
+where :math:`coef_n` are predefined coefficients determined by wavelength and :math:`chl_{conc}` is the Chlorophyll
+concentration, which is currently a fixed value of 0.18
