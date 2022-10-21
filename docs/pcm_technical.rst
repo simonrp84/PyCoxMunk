@@ -19,6 +19,7 @@ bidirectional reflectance terms:
 
 To estimate the reflectances, `pycoxmunk` requires knowledge of the sun-satellite viewing geometry through the following
 angles:
+
 - :math:`\theta_v`: The satellite zenith angle, defined as 0° when the satellite is directly overhead and 90° when the
   satellite is at the horizon.
 
@@ -43,8 +44,9 @@ provide the wavelength-specific water properties for each channel. If a channel 
 of wavelengths supported by the library (~450nm - 3700nm) then the closest library wavelength will be used instead.
 
 Finally, in order to compute the surface properties a source of near-surface wind information is needed. This could be
-from observations, numerical weather prediction models or a reanalysis such as the ECMWF/Copernicus `ERA5` products.
-The 10 meter wind speeds in the ERA5 dataset have been found to produce best results.
+from observations, numerical weather prediction models or a reanalysis such as the
+`ECMWF/Copernicus ERA5 <https://www.ecmwf.int/en/forecasts/datasets/reanalysis-datasets/era5>`_ products. The 10 meter
+wind speeds in the ERA5 dataset have been found to produce best results.
 
 
 Calculation of water properties
@@ -56,6 +58,7 @@ support for `ESA's Ocean Color CCI <https://climate.esa.int/en/projects/ocean-co
 a dynamic computation of water properties.
 
 Chlorophyll-A absorption is computed via:
+
 .. math::
 
     {chl_{abs}} = coef_0 * ( 1 - e^{-1.61 * chl_{conc}})
