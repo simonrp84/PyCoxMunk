@@ -19,9 +19,12 @@ bidirectional reflectance terms:
 
 To estimate the reflectances, `pycoxmunk` requires knowledge of the sun-satellite viewing geometry through the following
 angles:
- - :math:`\theta_v`: The satellite zenith angle, defined as 0:math:`^\circ` when the satellite is directly overhead and 90:math:`^\circ` when the satellite is at the horizon.
- - :math:`\phi_v`: The satellite azimuth angle, defined as 0:math:`^\circ` when the satellite is directly North of the pixel, and 90:math:`^\circ` when the satellite is directly East, 180:math:`^\circ` when the satellite is
-directly South and 270:math:`^\circ` when the satellite is directly West.
-- :math:`\theta_s`: The solar zenith angle, defined as 0:math:`^\circ` when the sun is directly overhead and 90:math:`^\circ` when the sun is at the horizon.
- - :math:`\phi_s`: The satellite azimuth angle, defined as 0:math:`^\circ` when the sun is directly North of the pixel, and 90 math:`^\circ` when the sun is directly East, 180:math:`^\circ` when the sun is
-directly South and 270:math:`^\circ` when the sun is directly West.
+ - :math:`\theta_v`: The satellite zenith angle, defined as 0 :math:`^\circ` when the satellite is directly overhead and 90 :math:`^\circ` when the satellite is at the horizon.
+
+ - :math:`\phi_v`: The satellite azimuth angle, defined as 0 :math:`^\circ` when the satellite is directly North of the pixel, and 90 :math:`^\circ` when the satellite is directly East, 180 :math:`^\circ` when the satellite is
+   directly South and 270 :math:`^\circ` when the satellite is directly West.
+
+- :math:`\theta_s`: The solar zenith angle, defined as 0 :math:`^\circ` when the sun is directly overhead and 90 :math:`^\circ` when the sun is at the horizon.
+
+ - :math:`\phi_s`: The satellite azimuth angle, defined as 0 :math:`^\circ` when the sun is directly North of the pixel, and 90 math:`^\circ` when the sun is directly East, 180 :math:`^\circ` when the sun is
+   directly South and 270 :math:`^\circ` when the sun is directly West.
