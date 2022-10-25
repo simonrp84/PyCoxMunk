@@ -40,7 +40,7 @@ New users should refer to the `quickstart <quickstart>`_ documentation, while mo
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
    quickstart

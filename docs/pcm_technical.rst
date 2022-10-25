@@ -172,19 +172,51 @@ simulate diffuse radiation by substituting the viewing or solar geometry with th
         # Loop over zeniths
         for i in range(0, n_quad_theta):
             cur_gl_zen = gauss_leg_theta_abscissas[i]
-            cur_gl_theta_w = gauss_leg_theta_weights[i]
             tmp_0d = 0
             tmp_dv = 0
             # Loop over azimuths
             for j in range(0, n_quad_phi):
-                cur_gl_azi = gauss_leg_phi_abscissas[i]
-                cur_gl_phi_w = gauss_leg_phi_weights[i]
+                cur_gl_azi = gauss_leg_phi_abscissas[j]
+                cur_gl_phi_w = gauss_leg_phi_weights[j]
                 # Compute the reflectances
                 tmp_0d = tmp_0d + calc_cox_munk_refl(sol_zen, sol_az, cur_gl_zen, cur_gl_azi) * cur_gl_phi_w
                 tmp_dv = tmp_dv + calc_cox_munk_refl(cur_gl_zen, cur_gl_azi, sat_zen, sat_azi) * cur_gl_phi_w
 
-            rho_0d = rho_0d + tmp_0d * qx_qw_sincos
-            rho_dv = rho_dv + tmp_dv * qx_qw_sincos
+            rho_0d = rho_0d + tmp_0d * qx_qw_sincos[i]
+            rho_dv = rho_dv + tmp_dv * qx_qw_sincos[i]
 
         rho_0d = rho_0d / np.pi
         rho_dv = rho_dv / np.pi
+
+
+
+Finally, the :math:`\rho_{dd}` term is calculated in a similar way, but substitutes both the solar and viewing zenith
+angles as opposed to just one or the other:
+
+.. code-block:: python
+
+    def get_rho_dd():
+        qx_qw_sincos = np.cos(gauss_leg_theta_abscissas) * np.sin(gauss_leg_theta_abscissas) * gauss_leg_theta_weights
+
+        # Initialise direct_diffuse reflectance
+        rho_dd = 0
+
+        # Loop over solar zeniths
+        for i in range(0, n_quad_theta):
+            outer_tmp_dd = 0
+            cur_zen1 = gauss_leg_theta_abscissas[i]
+            # Loop over satellite zeniths
+            for j in range(0, n_quad_theta):
+                inner_tmp_dd = 0
+                cur_zen2 = gauss_leg_theta_abscissas[j]
+                # Loop over relative azimuths
+                for k in range(0, n_quad_phi):
+                    cur_relazi = gauss_leg_phi_abscissas[k]
+                    cur_phi_w = gauss_leg_phi_weights[k]
+                    # Compute the reflectances
+                    inner_tmp_dd = inner_tmp_dd + calc_cox_munk_refl(cur_zen1, .0, cur_zen2, cur_relazi) * cur_phi_w
+
+                outer_tmp_dd = outer_tmp_dd + inner_tmp_dd * qx_qw_sincos[j]
+            rho_dd = rho_dd + outer_tmp_dd * qx_qw_sincos[i]
+
+        rho_dd = rho_dd / np.pi
