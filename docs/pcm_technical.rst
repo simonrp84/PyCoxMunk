@@ -162,7 +162,8 @@ The :math:`\rho_{0v}` term is simply the standard Cox-Munk sea surface reflectan
 performed for this term.
 
 The :math:`\rho_{0d}` and :math:`\rho_{dv}` terms use the actual solar or viewing geometry (respectively) and then
-simulate diffuse radiation by substituting the viewing or solar geometry with the Gauss-Legendre terms described above:
+simulate diffuse radiation by substituting the viewing or solar geometry with the Gauss-Legendre terms described above.
+The following python code offers a simplified workflow for computing these values:
 
 .. code-block:: python
 
