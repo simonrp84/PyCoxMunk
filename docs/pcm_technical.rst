@@ -3,7 +3,7 @@ Details of the pycoxmunk algorithm
 ==================================
 
 Introduction
-------------
+============
 `pycoxmunk` uses a  modified version of the mathematical equations described by Cox and Munk in their two 1954 papers
 describing the `roughness <https://doi.org/10.1364/JOSA.44.000838>`_
 and `statistics <https://images.peabody.yale.edu/publications/jmr/jmr13-02-04.pdf>`_ of the sea surface derived
@@ -50,7 +50,7 @@ wind speeds in the ERA5 dataset have been found to produce best results.
 
 
 Calculation of water properties
-_______________________________
+===============================
 Before performing the reflectance calculations we first compute the properties of the water being observed. Currently,
 this is done using fixed values from the literature (described in Sayer, 2010) but in future we plan to implement
 support for `ESA's Ocean Color CCI <https://climate.esa.int/en/projects/ocean-colour/>`_ data, which will enable more
@@ -82,7 +82,7 @@ The white cap fraction is defined by:
 
 
 Calculation of water reflectance
-________________________________
+================================
 
 Now, the water body reflectance is calculated via:
 
@@ -132,7 +132,7 @@ Finally, the total reflectance is calculated using:
 
 
 Calculation of water reflectance
-________________________________
+================================
 In addition to calculating the reflectance along the sun-surface-satellite path, `pycoxmunk` can also calculate the
 bidirectional reflectance terms. These comprise of the:
 
