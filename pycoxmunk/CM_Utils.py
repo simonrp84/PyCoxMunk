@@ -134,7 +134,7 @@ def check_type(in_val, var_typ):
         raise TypeError(f'{var_typ} must be a single float or numpy array! Got: {type(in_val)}')
 
 
-def _write_gdal(fname, datas): # pragma: no cover
+def _write_gdal(fname, datas):  # pragma: no cover
     from osgeo import gdal
     driver = gdal.GetDriverByName("GTiff")
     shp = datas.shape
