@@ -1,3 +1,4 @@
+.. _api_cmwind:
 
 PyCoxMunk Class
 ===============

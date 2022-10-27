@@ -1,3 +1,4 @@
+.. _api_cmscenegeom:
 
 PyCoxMunk Class
 ===============

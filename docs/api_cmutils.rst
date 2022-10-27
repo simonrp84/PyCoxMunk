@@ -1,3 +1,4 @@
+.. _api_cmutils:
 
 CM_Utils Functions
 ==================

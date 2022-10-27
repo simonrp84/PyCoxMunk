@@ -1,4 +1,5 @@
 .. _PCM_Technical:
+
 ==================================
 Details of the pycoxmunk algorithm
 ==================================

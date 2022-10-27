@@ -1,3 +1,4 @@
+.. _api_cmpixmask:
 
 PyCoxMunk Class
 ===============
