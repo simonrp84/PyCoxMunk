@@ -132,8 +132,8 @@ Finally, the total reflectance is calculated using:
 
 
 
-Calculation of water reflectance
-================================
+Calculation of bidirectional reflectance
+========================================
 In addition to calculating the reflectance along the sun-surface-satellite path, `pycoxmunk` can also calculate the
 bidirectional reflectance terms. These comprise of the:
 
