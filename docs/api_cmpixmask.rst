@@ -17,10 +17,12 @@ class can be initialised with:
                               delete_when_done)
 
 The first two arguments are mandatory:
+
  - `scn`: A `satpy.Scene` class containing loaded satellite data.
  - `band_names`: A list of string specifying which band / channel names to process.
 
 The other arguments are optional:
+
  - `oc_dir`: The directory containing ocean color data. This is currently unused and is a placeholder for when ocean
     color support is added at a later date.
  - `angle_names`: This can be a string, 'calc' to request that `pycoxmunk` calculates all required sun and satellite
@@ -56,6 +58,7 @@ The `PyCoxMunk` class contains various functions that provide the core functiona
  - `setup_wind`: Initialises the wind data used to compute the sea surface reflectance.
  - `retr_coxmunk_refl`: Runs the sea surface reflectance code to retrieve both sun-satellite reflectance and, if
     requested, also the bidirectional reflectance.
+
 In addition, the `_run_delete` function is not designed for direct use, instead the `delete_when_done` argument to
 `PyCoxMunk` should be used, but this can be called to delete unneeded ancillary information to reduce memory use.
 
@@ -64,6 +67,7 @@ The `setup_pixmask` function
 
 This function computes a pixel-level mask of which regions should be processed. It takes four arguments, all of which
 are optional:
+
  - `cloud_mask`: An array of equal size to the satellite data, specifying where clouds are located. A value of 0
     indicates cloud-free while 1 or greater indicates cloudy pixels that are not to be processed.
  - `land_mask`: An array of equal size to the satellite data, specifying where land is located. A value of 0
@@ -72,12 +76,14 @@ are optional:
     given threshold value.
  - `sat_zen_mask`: An array of equal size to the satellite data, specifying where pixel solar zenith angle exceeds a
     given threshold value.
+
 This function populates the `pixmask` in the `PyCoxMunk` class. More details are given in the `CMPixMask` documentation.
 
 The `setup_wind` function
 _________________________
 
 This function adds wind information to the `PyCoxMunk` class and is called with two arguments:
+
  - `u10`: A single value or array of same shape as the satellite data, specifying the U (East-West) wind speed in
     meters per second. If a single value, this is assumed to be the wind for each pixel in the satellite image. If an
     array, it is expected that each pixel has a defined wind speed.
@@ -103,4 +109,3 @@ Similarly, the bidirectional components can be retrieved with:
 `PyCoxMunk.scn[f'cox_munk_rho0v_{band_name}']`
 `PyCoxMunk.scn[f'cox_munk_rhodv_{band_name}']`
 `PyCoxMunk.scn[f'cox_munk_rhodd_{band_name}']`
-
