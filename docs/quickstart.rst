@@ -1,4 +1,5 @@
 .. _PCM_Quickstart:
+==========
 Quickstart
 ==========
 
@@ -11,12 +12,13 @@ This page gives a brief overview of how to use _pycoxmunk_. Further information 
 `github repository <https://github.com/simonrp84/PyCoxMunk/tree/main/Examples>`_.
 
 Initialising pycoxmunk
-~~~~~~~~~~~~~~~~~~~~~~
+======================
 
 Before using _pycoxmunk_, you must load satellite data with _satpy_ or your own code that emulates satpy xarray
 `datasets`:
 
 .. code-block:: python
+
     # Load libraries
     from satpy import Scene
     from glob import glob
@@ -37,6 +39,7 @@ Before using _pycoxmunk_, you must load satellite data with _satpy_ or your own 
 We can now load _pycoxmunk_ and set up our processing
 
 .. code-block:: python
+
     # Load library
     import pycoxmunk
 
@@ -59,6 +62,7 @@ regions where you want to retrieve Cox-Munk reflectances and be greater than 0 f
 processing.
 
 .. code-block:: python
+
     my_u10_wind, my_u10_wind = load_some_wind() # Resulting in numpy or xarray of same shape as satellite data
     pcm.setup_wind(my_u10_wind, my_u10_wind)
 
@@ -68,8 +72,14 @@ processing.
     pcm.setup_pixmask(cloud_mask = my_cloudmask)
 
 
+
+Retrieving results
+==================
+
 Now, finally, we can calculate the reflectances themselves:
+
 .. code-block:: python
+
     pcm.retr_coxmunk_refl()
 
 The results will be stored as new datasets in the `scn` variable within the PyCoxMunk class, such as
@@ -77,6 +87,7 @@ The results will be stored as new datasets in the `scn` variable within the PyCo
 accessing the underlying data arrays.
 
 .. code-block:: python
+
     # Save the data via satpy
     import numpy as np
     pcm.save_dataset('cox_munk_refl_my_band', enhance=False, dtype=np.float32, fill_value=0, filename='/out_dir/file.tif')
