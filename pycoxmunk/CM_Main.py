@@ -69,17 +69,18 @@ class PyCoxMunk:
     my_sea_refl = my_pcm.scn['cox_munk_refl_VIS800'].data
     """
 
-    def __init__(self, scn, band_names, oc_dir=None, angle_names=None,
+    def __init__(self, scn, band_names, oc_dir=None, angle_names='calc',
                  do_brdf=False, mask_bad=True, delete_when_done=True):
         """Initialise the class.
         Inputs:
         - scn: Satpy Scene, the scene containing data and angles.
         - band_names: List, if supplied lists all band names to process.
-        - oc_dir: (optional) String, if supplied points to location of Ocean Color CCI data.
-        - angle_names: (optional) Dict, if supplied this should list all
-          solar/satellite angle dataset names. If not supplied, these are assumed.
-        - do_brdf: Bool, if true then PyCoxMunk will also compute BRDF coefficients.
-        - mask_bad: Bool, if true then pixels with bad data (f.ex zenith too high) will be set to np.nan
+        - oc_dir: (optional) String, if supplied points to location of Ocean Color CCI data. Default: None
+        - angle_names: (optional) Dict or string, if dict this should list all solar/satellite angle dataset names.
+          If string of value 'calc' then pycoxmunk will attempt to calculate scene geometry internally. Default: 'calc'
+        - do_brdf: Bool, if true then PyCoxMunk will also compute BRDF coefficients. Default: False
+        - mask_bad: Bool, if true then pixels with bad data (f.ex zenith too high) will be set to np.nan. default: True
+        - delete_when_done: Bool, if true then ancillary data will be deleted to save memory. default: True
         """
 
         # Check types and set up variables
@@ -166,7 +167,7 @@ class PyCoxMunk:
                                     da.array(lons))
 
         # Initialise shared winds and mask, not yet loaded
-        self.shared_wind = None
+        self.shared_wind = CMSharedWind(self.geometry, 0, 0)
         self.pixmask = None
 
     def setup_pixmask(self, cloud_mask=None, land_mask=None, sol_zen_mask=None, sat_zen_mask=None):
