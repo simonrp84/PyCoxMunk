@@ -44,8 +44,8 @@ Also defined in this module are several constants used throughout the processing
  - `chl_a_conc`: The default Chlorophyll-A concentration, 0.18 :math:`mg/m^3`. In the future this will be replaced by
    data from ESA's Ocean Color CCI.
  - `n_air`: The refractive index of air, defined as 1.00029
- - `cm_min_wvl`: The minimum acceptable wavelength for processing via `pycoxmunk`. Defined as 0.2 :math:`\mu m`
- - `cm_max_wvl`: The maximum acceptable wavelength for processing via `pycoxmunk`. Defined as 4.5 :math:`\mu m`
+ - `cm_min_wvl`: The minimum wavelength for processing via `pycoxmunk`. Defined as 0.2 :math:`\mu m`
+ - `cm_max_wvl`: The maximum wavelength for processing via `pycoxmunk`. Defined as 4.5 :math:`\mu m`
  - `zeisse_coef`: Coefficients used for computing the Zeisse correction, which is applied at high zenith angles.
  - `n_quad_theta`: The number of quadrature points for computing zenith component of the diffuse BRDF.
  - `n_quad_phi`: The number of quadrature points for computing azimuth component of the diffuse BRDF.
