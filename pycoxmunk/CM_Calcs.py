@@ -17,7 +17,7 @@
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Class for the Scene wind and sea surface information."""
 
-from pycoxmunk.CM_Constants import CM_DATA_DICT, WaterData, chlconc, n_air, dither_more, \
+from pycoxmunk.CM_Constants import CM_DATA_DICT, WaterData, chl_a_conc, n_air, dither_more, \
     cm_min_wvl, cm_max_wvl, n_quad_theta, n_quad_phi
 from pycoxmunk.CM_Shared_Wind import CMSharedWind
 from pycoxmunk.CM_SceneGeom import CMSceneGeom
@@ -161,10 +161,10 @@ def run_oceancolor(water_data, oc_data=None):
     # Interim values for Chlorophyll-a absorption and backscatter.
     # OC-CCI data contains actual values, so when that's implemented these two lines can be removed.
     if oc_data is None:
-        water_data.chlabs = water_data.chl_a_coef[0] * (1.0 - np.exp(-1.61 * chlconc)) + \
-                            water_data.chl_a_coef[1] * chlconc
+        water_data.chlabs = water_data.chl_a_coef[0] * (1.0 - np.exp(-1.61 * chl_a_conc)) + \
+                            water_data.chl_a_coef[1] * chl_a_conc
 
-        water_data.chlbsc = 0.02 * (0.5 - 0.25 * np.log10(chlconc)) * 0.55 / water_data.wavelength + 0.002
+        water_data.chlbsc = 0.02 * (0.5 - 0.25 * np.log10(chl_a_conc)) * 0.55 / water_data.wavelength + 0.002
 
         water_data.total_backscat = water_data.base_backscat + water_data.chlbsc
         water_data.total_abs = water_data.base_abs + water_data.chlabs

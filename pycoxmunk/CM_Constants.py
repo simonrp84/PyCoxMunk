@@ -20,8 +20,6 @@ import numpy as np
 
 dither_more = 1e-5
 
-chlconc = 0.18
-
 # Approximate median chlorophyll - A concentration from GlobCOLOUR (mg / m3)
 chl_a_conc = 0.18
 

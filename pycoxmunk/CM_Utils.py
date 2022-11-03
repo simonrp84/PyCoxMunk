@@ -68,8 +68,8 @@ def gauss_leg_quadx(n, x1, x2):
      - x1: Float, lower limit for computation.
      - x2: Float, upper limit for computation.
     Returns:
-     - x: ndarray, the abscissas.
-     - w: ndarray, the weights.
+     - x: array, the abscissas.
+     - w: array, the weights.
     """
 
     if n <= 0:

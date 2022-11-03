@@ -43,7 +43,7 @@ used in SMACPy.
 
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Contents:
 
    quickstart
