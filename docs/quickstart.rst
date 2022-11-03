@@ -9,7 +9,7 @@ users new to working with satellite data first familiarise themselves with the b
 beginning to use `pycoxmunk`.
 
 This page gives a brief overview of how to use `pycoxmunk`. Further information can be found in the
-`API documentation <pcm_api>`_ and in the example code / notebooks that are part of the `pycoxmunk`
+`API documentation <./pcm_api.html>`_ and in the example code / notebooks that are part of the `pycoxmunk`
 `github repository <https://github.com/simonrp84/PyCoxMunk/tree/main/Examples>`_.
 
 Initialising pycoxmunk
@@ -48,7 +48,7 @@ We can now load _pycoxmunk_ and set up our processing
     pcm = pycoxmunk.PyCoxMunk(scn, my_bands)
 
 
-This example assumes the default options, so please view the `API documentation <pcm_api>`_ for more advanced usage.
+This example assumes the default options, so please view the `API documentation <./pcm_api.html>`_ for more advanced usage.
 _pycoxmunk_ requires geometry information: The sun and satellite zenith and azimuth angles relative to the pixels in the
 data. These can be supplied via a dict or - for some satellites - can be calculated directly.
 

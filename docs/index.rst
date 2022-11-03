@@ -32,8 +32,9 @@ The `pycoxmunk` code is open-source and `available on GitHub <https://github.com
 to add new features, improve accuracy, fix bugs, etc are more than welcome. You can also ask questions and raise bug
 reports via the issues tab on the GitHub page.
 
-New users should refer to the `quickstart <quickstart>`_ documentation, while more advanced users can refer to the
-`API documentation <pcm_api>`_ and the `technical description <pcm_technical>`_ of the correction method used in SMACPy.
+New users should refer to the `quickstart <./quickstart.html>`_ documentation, while more advanced users can refer to the
+`API documentation <./pcm_api.html>`_ and the `technical description <./pcm_technical.html>`_ of the correction method
+used in SMACPy.
 
 .. figure:: _img/CM_Overlay.jpg
    :class: with-border
