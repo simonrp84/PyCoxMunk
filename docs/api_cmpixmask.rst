@@ -31,7 +31,7 @@ zenith angle array and threshold value:
 
     from pycoxmunk.CM_PixMask import CMPixMask
     cm_mask = CMPixMask()
-    my_solar_zeniths = load_solzens()  # where this is some function to load zenith angles, if not done via satpy
+    my_solar_zeniths = load_solzens()  # where this is some function to load zenith angles
     cm_mask.cut_high_zen(my_solar_zeniths, threshold=70)
 
 The above code will set all pixels in `cm_mask.mask` to `1` where `my_solar_zeniths` is greater than 70. Be aware of
