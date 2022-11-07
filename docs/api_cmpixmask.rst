@@ -34,6 +34,6 @@ zenith angle array and threshold value:
     my_solar_zeniths = load_solzens()  # where this is some function to load zenith angles
     cm_mask.cut_high_zen(my_solar_zeniths, threshold=70)
 
-The above code will set all pixels in `cm_mask.mask` to `1` where `my_solar_zeniths` is greater than 70. Be aware of
+The above code will set all pixels in `cm_mask.mask` to `1` where `my_solar_zeniths` is greater than 70°. Be aware of
 confusion between degrees and radians, the function is agnostic but requires both to be in the same units. Typically,
 zenith (and azimuth) angles for satellites are specified in degrees, but this is not always the case.

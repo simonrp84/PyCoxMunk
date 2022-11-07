@@ -3,8 +3,8 @@
 =================
 The pycoxmunk API
 =================
-The main functionality of `pycoxmunk` is accessible through the `PyCoxMunk <./api_pycoxmunk.html>`_ class, which makes use of
-several helper classes and functions:
+The main functionality of `pycoxmunk` is accessible through the `PyCoxMunk <./api_pycoxmunk.html>`_ class, which makes
+use of several helper classes and functions:
 
 .. toctree::
    :maxdepth: 2
