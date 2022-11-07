@@ -11,8 +11,8 @@ The `WaterData` class
 
 This class stores per-wavelength water properties, used within the code to compute - for example - the white cap
 reflectance.
-Each instance of the class should define the following attributes:
 
+Mandatory class attributes:
  - `wavelength`: Float, the wavelength, in micrometers, at which the remaining attributes are defined.
  - `refrac_real`: Float, he real component of the refractive index.
  - `refrac_imag`: Float, he imaginary component of the refractive index.

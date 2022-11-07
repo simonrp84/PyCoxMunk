@@ -54,7 +54,6 @@ Initialisation of the class
 Initialisation of the `CMSceneGeom` class requires 6 arguments and can also accept various optional arguments:
 
 Mandatory arguments:
-
  - `sza`: Float or array, the solar zenith angle in degrees.
  - `saa`: Float or array, the solar azimuth angle in degrees.
  - `vza`: Float or array, the satellite zenith angle in degrees.
@@ -63,7 +62,6 @@ Mandatory arguments:
  - `lons`: Float or array, the pixel longitude in degrees.
 
 Optional arguments:
-
  - `raa`: Float or array, the relative azimuth angle in degrees. Calculated internally if not supplied.
  - `zenith_min`: Float, the minimum zenith angle in degrees. Zeniths lower than this will be clipped. Default = 0
  - `zenith_max`: Float, the maximum zenith angle in degrees. Zeniths higher than this will be clipped. Default = 85
@@ -84,8 +82,13 @@ The `compute_additional` function
 To ease the workload on the user, many angles are calculated internally rather than being mandatory arguments. The
 `compute_additional` function computes the cosine and sine of the solar and viewing zenith angles, and of the relative
 azimuth angle. Results are stored in `self.cos_{val}` and `self.sin_{val}` where val is `sza`, `vza` or `raa` for the
-solar zenith, satellite zenith and relative azimuth angles respectively. The function takes no arguments and returns
-no variables.
+solar zenith, satellite zenith and relative azimuth angles respectively.
+
+Arguments:
+ - None
+
+Returns:
+ - Nothing
 
 The `check_angle_bounds` function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -93,10 +96,12 @@ The `check_angle_bounds` function
 The `pycoxmunk` code requires angles within a certain range, described above. This function ensures that angles are
 within this range and, optionally, clips angles outside the range to the minimum or maximum acceptable value.
 
-The function takes two arguments, both optional:
-
+Arguments:
  - `fix`: Boolean, specifies whether to clip out-of-range angles. Default: True
  - `check_raa`: Boolean, specifies whether to include the relative azimuth angle in checks. Default: True
+
+Returns:
+ - Nothing
 
 The function returns no values, but modifies class instance variables if out of range and `fix=True`. When out-of-range
 values are found a warning is raised if `fix=True` and a `ValueError` otherwise. The latitude, longitude and relative
@@ -116,6 +121,12 @@ Values greater than 180° are scaled via:
 .. math::
     {\phi_r} = 360 - {\phi_r}
 
+Arguments:
+ - None
+
+Returns:
+ - `raa`: Float or array, the relative azimuth angle.
+
 The `cm_calcangles` function
 ----------------------------
 
@@ -123,7 +134,6 @@ This function is separate to the `CMSceneGeom` class, and is used to calculate s
 satellite Scene. This uses the `satpy` functions `_get_sensor_angles` and `_get_sun_angles`.
 
 Arguments:
-
  - `inscn`: Scene, the input satellite data Scene.
  - `refband`: String, the band name used for computing the angles. Required as multiple resolutions of data may be
    present in the input scene.
