@@ -33,6 +33,14 @@ class TestCMMain(unittest.TestCase):
 
     @staticmethod
     def create_test_scene(band_names, angle_names):
+
+        # Define orbital parameters used for lat/lon calculation
+        orb_par = {'projection_longitude': 0.0,
+                   'projection_latitude': 0.0,
+                   'projection_altitude': 35784012.5,
+                   'satellite_nominal_latitude': 0.0,
+                   'satellite_nominal_longitude': 0.0,
+                   'satellite_nominal_altitude': 36000000.0}
         # Create test Scene
         scn = Scene()
         targ_area = create_area_def("source_area",
@@ -47,7 +55,8 @@ class TestCMMain(unittest.TestCase):
                                      coords={'y': np.zeros(10), 'x': np.zeros(10)},
                                      attrs={'start_time': datetime.utcnow(),
                                             'area': targ_area,
-                                            'wavelength': wvl_mock})
+                                            'wavelength': wvl_mock,
+                                            'orbital_parameters': orb_par})
 
         for band in angle_names.keys():
             scn[angle_names[band]] = xr.DataArray(da.from_array(np.zeros((10, 10))),

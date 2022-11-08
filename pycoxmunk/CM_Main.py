@@ -167,7 +167,7 @@ class PyCoxMunk:
                                     da.array(lons))
 
         # Initialise shared winds and mask, not yet loaded
-        self.shared_wind = CMSharedWind(self.geometry, 0, 0)
+        self.shared_wind = CMSharedWind(self.geometry, 0., 0.)
         self.pixmask = None
 
     def setup_pixmask(self, cloud_mask=None, land_mask=None, sol_zen_mask=None, sat_zen_mask=None):
