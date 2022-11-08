@@ -14,7 +14,7 @@ readme = "README.md"
 authors = [{ name = "Simon R Proud", email = "simon.proud@stfc.ac.uk" }]
 license = { file = "LICENSE" }
 classifiers = [
-    "License :: OSI Approved :: GNU General Public License v3.0",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
 ]
