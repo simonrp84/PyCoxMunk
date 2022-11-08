@@ -288,7 +288,7 @@ def _calc_0d_dv(in_refl: CMReflectance,
 @jit(parallel=True, nopython=True)
 def _loop_od_ov(rho: np.ndarray, rho2: np.ndarray,
                 qw_phi: np.ndarray, qx_cos_sin_qw_theta: np.ndarray,
-                nq_theta: int = 4, nq_phi: int = 4) -> np.ndarray:
+                nq_theta: int = 4, nq_phi: int = 4) -> np.ndarray:  # pragma: no cover
     """Loop over quad theta and phi."""
 
     out_0d = np.zeros_like(rho[:, :, 0, 0])
@@ -379,7 +379,7 @@ def _calc_dd(in_refl: CMReflectance,
 @jit(parallel=True, nopython=True)
 def _loop_dd(rho: np.ndarray,
              qw_phi: np.ndarray, qx_cos_sin_qw_theta: np.ndarray,
-             nq_theta: int = 4, nq_phi: int = 4) -> np.ndarray:
+             nq_theta: int = 4, nq_phi: int = 4) -> np.ndarray:  # pragma: no cover
     """Loop over quad theta and phi."""
 
     out_dd = np.zeros_like(rho[:, :, 0, 0, 0])
