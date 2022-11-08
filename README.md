@@ -26,16 +26,15 @@ Installation
 
 pycoxmunk can be installed from PyPI with pip:
 
-.. code-block:: bash
-
+```bash
     pip install pycoxmunk
-
+```
 
 It is also available from `conda-forge` for conda installations:
 
-.. code-block:: bash
-
+```bash
     conda install -c conda-forge pycoxmunk
+```
 
 Credits
 -------
@@ -52,14 +51,15 @@ If you encounter any problems with this code or the documentation then please fi
 [issue](https://github.com/simonrp84/PyCoxMunk/issues).
 It may help in debugging any problems to enable satpy's debug mode:
 
--- code-block:: python
 
+```python
     from satpy import debug_on
     debug_on()
+```
 
 This will print additional log and diagnostic information.
 
 Suggestions for new features are welcome, but may not always be possible for me to code due to limited time. You can
-also submit your own 'pull requests' that add features of fix bugs. This is the recommended way to change the library
+also submit your own [pull requests](https://github.com/simonrp84/PyCoxMunk/pulls) that add features of fix bugs. This is the recommended way to change the library
 code, rather than emailing me your updates. By submitting a pull request your changes are documented and your 
-contribution to the code is clear.~~~~
+contribution to the code is clear.
