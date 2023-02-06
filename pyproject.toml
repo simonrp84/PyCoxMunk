@@ -36,3 +36,9 @@ requires-python = ">=3.8"
 
 [project.urls]
 Homepage = "https://github.com/simonrp84/PyCoxMunk"
+
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::RuntimeWarning",
+]

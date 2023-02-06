@@ -20,11 +20,11 @@
 from pycoxmunk.CM_Shared_Wind import CMSharedWind
 from pycoxmunk.CM_SceneGeom import CMSceneGeom
 import numpy as np
-import unittest
+import pytest
 
 
-class TestSharedWind(unittest.TestCase):
-    def setUp(self):
+class TestSharedWind:
+    def setup_method(self):
         """Set up some common variables for the tests."""
         self.u10 = np.array([15., -4., -1, 10.7])
         self.v10 = np.array([8.1, 4.0, 11.9, -8.1])
@@ -46,7 +46,8 @@ class TestSharedWind(unittest.TestCase):
         self.lats = np.array([-5.247, -58.473, 17.666, 48.237])
         self.lons = np.array([-116.184, 73.047, 120.744, -121.522])
 
-        self.scene_geom = CMSceneGeom(self.sza, self.saa, self.vza, self.vaa, self.lats, self.lons, raa=self.raa)
+        with pytest.warns(UserWarning, match="Some solar zenith values out of range. Clipping."):
+            self.scene_geom = CMSceneGeom(self.sza, self.saa, self.vza, self.vaa, self.lats, self.lons, raa=self.raa)
 
     def test_sharedwind(self):
         """Test the calculation of relative azimuth angles."""

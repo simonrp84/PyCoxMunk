@@ -17,14 +17,13 @@
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Test the pixel masking module."""
 
-import unittest
 import numpy as np
 from pycoxmunk.CM_PixMask import CMPixMask
 
 
-class TestCMPixMask(unittest.TestCase):
+class TestCMPixMask:
     """Test the various pixel masking methods."""
-    def setUp(self):
+    def setup_method(self):
         """Set up the initial data."""
         self.zens = np.array([0., 0.01, 12., 15, 45.35, 79.99, 84.23, 91.1, 112.12, -10.])
         self.cloud_mask = np.array([0, 1, 1, 0, 0, 0, 0, 1, 1, 1])
@@ -41,7 +40,7 @@ class TestCMPixMask(unittest.TestCase):
         """Test the masks are combined correctly."""
         # No masks
         main_mask = CMPixMask()
-        self.assertEqual(main_mask.mask, None)
+        assert main_mask.mask is None
 
         main_mask = CMPixMask(cloud_mask=self.cloud_mask)
         np.testing.assert_allclose(main_mask.mask, self.cloud_mask)

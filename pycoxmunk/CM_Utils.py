@@ -122,7 +122,7 @@ def check_and_reshape(arr, good_shape):
 def check_type(in_val, var_typ):
     """Check that input variable is correct type.
     All inputs should be numpy array or a float."""
-    if type(in_val) == float or type(in_val) == np.float64 or type(in_val) == np.float:
+    if type(in_val) == float or type(in_val) == np.float64 or type(in_val) == float:
         return in_val
     elif isinstance(in_val, np.ndarray):
         return da_ar.array(in_val)

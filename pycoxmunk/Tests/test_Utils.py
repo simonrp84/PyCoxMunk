@@ -18,21 +18,20 @@
 """Test the scene geometry module."""
 from pycoxmunk import CM_Utils
 import xarray as xrd
-from unittest import mock
 import numpy as np
-import unittest
+import pytest
 
 
-class TestUtils(unittest.TestCase):
+class TestUtils:
     def test_typechecker(self):
         """Checks for array/value types."""
         CM_Utils.check_type(1., 'test')
         CM_Utils.check_type(np.array([1.]), 'test')
         CM_Utils.check_type(np.array([1]), 'test')
         CM_Utils.check_type(xrd.DataArray(np.array([1])), 'test')
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             CM_Utils.check_type([1.], 'test')
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             CM_Utils.check_type(1, 'test')
 
     def test_check_and_reshape(self):
@@ -41,13 +40,13 @@ class TestUtils(unittest.TestCase):
         test_arr = np.random.uniform(0, 1, 10)
         out_arr = CM_Utils.check_and_reshape(test_arr, (10,))
 
-        self.assertEqual(out_arr.shape, test_arr.shape)
-        with self.assertRaises(ValueError):
+        assert out_arr.shape == test_arr.shape
+        with pytest.raises(ValueError):
             CM_Utils.check_and_reshape(test_arr, 100)
 
         test_arr = np.random.uniform(0, 1, 1)
         out_arr = CM_Utils.check_and_reshape(test_arr, 10)
-        self.assertEqual(out_arr.shape, (10,))
+        assert out_arr.shape == (10,)
 
     def test_gauss_leg(self):
         """Test the Gauss-Legendre calculations."""
@@ -73,5 +72,5 @@ class TestUtils(unittest.TestCase):
                              12.33277877, 11.55788056, 10.05678762, 7.92387726, 5.29349664, 2.33517915])
         np.testing.assert_almost_equal(x, expected)
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             CM_Utils.gauss_leg_quadx(0, -10, 10)

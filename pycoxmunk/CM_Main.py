@@ -157,7 +157,7 @@ class PyCoxMunk:
         # dimensions! This means that high res bands (such as Himawari B03) must be resampled to
         # lower res band resolution before passing to PyCoxMunk. If you wish to process both
         # high and low res bands at native resolution then you must call PyCoxMunk multiple times.
-        lons, lats = self.scn[self.band_names[0]].attrs['area'].get_lonlats_dask()
+        lons, lats = self.scn[self.band_names[0]].attrs['area'].get_lonlats()
 
         self.geometry = CMSceneGeom(da.array(self.scn[self.angle_names['sza']]),
                                     da.array(self.scn[self.angle_names['saa']]),

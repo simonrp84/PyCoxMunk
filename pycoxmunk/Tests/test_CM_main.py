@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License along with
 # PyCoxMunk.  If not, see <http://www.gnu.org/licenses/>.
 """Test the Cox-Munk calculations module."""
+import pytest
 from pyresample import create_area_def
 from datetime import datetime
 from pycoxmunk.CM_Main import PyCoxMunk
@@ -25,10 +26,9 @@ from satpy import Scene
 import dask.array as da
 import xarray as xr
 import numpy as np
-import unittest
 
 
-class TestCMMain(unittest.TestCase):
+class TestCMMain:
     """Tests for the overarching CM_Main module."""
 
     @staticmethod
@@ -64,7 +64,7 @@ class TestCMMain(unittest.TestCase):
                                                   attrs={'start_time': datetime.utcnow()})
         return scn
 
-    def setUp(self):
+    def setup_method(self):
         self.good_bnd_names = ['VIS006']
         self.missing_angle_names = {'sza': 'solar_zenith_angle',
                                     'vza': 'satellite_zenith_angle',
@@ -83,40 +83,40 @@ class TestCMMain(unittest.TestCase):
     def test_badbools(self):
         """Test some of the boolean options"""
         # Bad BRDF
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             PyCoxMunk(None, None, do_brdf='potato')
 
         # Bad masking
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             PyCoxMunk(None, None, mask_bad='tomato')
 
         # Bad deletion
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             PyCoxMunk(None, None, delete_when_done='parsnip')
 
     def test_badbands(self):
         """Test errors are raised if bad band / angle combinations are used."""
         # Bad band names
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             PyCoxMunk(self.scn_good, band_names='potato')
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             PyCoxMunk(self.scn_good, band_names=[])
-        with self.assertRaises(KeyError):
+        with pytest.raises(KeyError):
             PyCoxMunk(self.scn_good, band_names=['VIS008'])
 
         # Bad angle names
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             PyCoxMunk(self.scn_good, self.good_bnd_names, angle_names=1.0)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             PyCoxMunk(self.scn_good, self.good_bnd_names, angle_names={})
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             PyCoxMunk(self.scn_good, self.good_bnd_names, angle_names={'sza': 1.})
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             PyCoxMunk(self.scn_good, self.good_bnd_names, angle_names={'sza': 1., 'vza': 1., })
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             PyCoxMunk(self.scn_good, self.good_bnd_names, angle_names={'sza': 1., 'vza': 1., 'saa': 1., })
         # Missing dataset in Scene
-        with self.assertRaises(KeyError):
+        with pytest.raises(KeyError):
             PyCoxMunk(self.scn_missing, self.good_bnd_names, angle_names=self.good_angle_names)
 
         # Good angle names
@@ -125,24 +125,24 @@ class TestCMMain(unittest.TestCase):
     def test_ocean_color_init(self):
         """Test that ocean color options are parsed correctly."""
         # Bad ocean color dir
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             PyCoxMunk(self.scn_good, self.good_bnd_names, angle_names=self.good_angle_names, oc_dir=1.0)
 
         # No ocean color dir
         pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, angle_names=self.good_angle_names, oc_dir=None)
-        self.assertFalse(pcm.use_occci)
+        assert not pcm.use_occci
 
         # Good ocean color dir
         ocdir = '/media/test_oc_dir/'
         pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, angle_names=self.good_angle_names, oc_dir=ocdir)
-        self.assertTrue(pcm.use_occci)
-        self.assertEqual(pcm.oc_dir, ocdir)
+        assert pcm.use_occci
+        assert pcm.oc_dir == ocdir
 
     def test_calcangles(self):
         """Check that angle calculation is initialised correctly."""
         mocker = mock.MagicMock()
         mocker_lalo = mock.MagicMock()
-        mocker_lalo.attrs['area'].get_lonlats_dask = self._get_lonlats
+        mocker_lalo.attrs['area'].get_lonlats = self._get_lonlats
         tmp_dict = {'VIS006': mocker_lalo,
                     'solar_zenith_angle': np.array([10, 10]),
                     'satellite_zenith_angle': np.array([10, 10]),
@@ -156,17 +156,18 @@ class TestCMMain(unittest.TestCase):
     def test_misc(self):
         """Misc tests for creation of the CM class."""
         # Bad Scene
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             PyCoxMunk(None, None)
 
     def test_wind_setup(self):
         """Test that winds are set up correctly."""
         mocker = mock.MagicMock()
         mocker.return_value = True
-        with mock.patch('pycoxmunk.CM_Main.CMSharedWind', mocker):
-            pcm = PyCoxMunk(self.scn_good, self.good_bnd_names)
-            pcm.setup_wind(13.4, -12.3)
-            self.assertTrue(pcm.shared_wind)
+        with pytest.warns(UserWarning, match="Some solar zenith values out of range. Clipping."):
+            with mock.patch('pycoxmunk.CM_Main.CMSharedWind', mocker):
+                pcm = PyCoxMunk(self.scn_good, self.good_bnd_names)
+                pcm.setup_wind(13.4, -12.3)
+                assert pcm.shared_wind
 
     def _make_mocked_cm_refl(self):
         cmr_mocker = mock.MagicMock()
@@ -188,8 +189,9 @@ class TestCMMain(unittest.TestCase):
 
     def test_pixmask(self):
         """Test that pixmask is correctly initialised in the class."""
-        pcm = PyCoxMunk(self.scn_good, self.good_bnd_names)
-        self.assertTrue(pcm.pixmask is None)
+        with pytest.warns(UserWarning, match="Some solar zenith values out of range. Clipping."):
+            pcm = PyCoxMunk(self.scn_good, self.good_bnd_names)
+        assert pcm.pixmask is None
         pcm.setup_pixmask(np.array([0, 0, 1]), np.array([2., 0, 0]), np.array([0., 0, 0]), np.array([1., 0, 1.]))
         np.testing.assert_allclose(pcm.pixmask.mask, np.array([1, 0, 1]))
 
@@ -204,32 +206,35 @@ class TestCMMain(unittest.TestCase):
         # Recreate scene in case previous tests have messed with it.
         self.scn_good = self.create_test_scene(self.good_bnd_names, self.good_angle_names)
         mock_cmr_func.return_value = self._make_mocked_cm_refl()
-        pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, mask_bad=False, do_brdf=False)
+        with pytest.warns(UserWarning, match="Some solar zenith values out of range. Clipping."):
+            pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, mask_bad=False, do_brdf=False)
         pcm.shared_wind = ['testval']
         pcm.retr_coxmunk_refl()
         np.testing.assert_allclose(pcm.scn[cm_band_name].data, self.tmp_cmr_array)
-        self.assertFalse(cm_rho0v_name in pcm.scn)
-        with self.assertRaises(AttributeError):
+        assert cm_rho0v_name not in pcm.scn
+        with pytest.raises(AttributeError):
             pcm.cm_refl.rhoul
 
         # Now we test for case when we also want the BRDF
         self.scn_good = self.create_test_scene(self.good_bnd_names, self.good_angle_names)
         mock_cmr_func.return_value = self._make_mocked_cm_refl()
-        pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, mask_bad=False, do_brdf=True)
+        with pytest.warns(UserWarning, match="Some solar zenith values out of range. Clipping."):
+            pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, mask_bad=False, do_brdf=True)
         pcm.retr_coxmunk_refl()
         np.testing.assert_allclose(pcm.scn[cm_band_name].data, self.tmp_cmr_array)
-        self.assertTrue(cm_rho0v_name in pcm.scn)
+        assert cm_rho0v_name in pcm.scn
         np.testing.assert_allclose(pcm.scn[cm_rho0v_name].data, self.tmp_cmr_array * 4)
 
         # Finally, test case where we mask bad values
         self.scn_good = self.create_test_scene(self.good_bnd_names, self.good_angle_names)
         mock_cmr_func.return_value = self._make_mocked_cm_refl()
-        pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, mask_bad=True, do_brdf=True)
+        with pytest.warns(UserWarning, match="Some solar zenith values out of range. Clipping."):
+            pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, mask_bad=True, do_brdf=True)
         pcm.retr_coxmunk_refl()
         new_arr = self.tmp_cmr_array.copy()
         new_arr[0, 0] = np.nan
         np.testing.assert_allclose(pcm.scn[cm_band_name].data, new_arr)
-        self.assertTrue(cm_rho0v_name in pcm.scn)
+        assert cm_rho0v_name in pcm.scn
         np.testing.assert_allclose(pcm.scn[cm_rho0v_name].data, new_arr * 4)
 
         # Now set up secondary pixmask class
@@ -238,7 +243,8 @@ class TestCMMain(unittest.TestCase):
         cmask = np.zeros((10, 10))
         cmask[5, 5] = 1
 
-        pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, mask_bad=True, do_brdf=True)
+        with pytest.warns(UserWarning, match="Some solar zenith values out of range. Clipping."):
+            pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, mask_bad=True, do_brdf=True)
         pcm.setup_pixmask(cloud_mask=cmask)
         pcm.retr_coxmunk_refl()
         new_arr = self.tmp_cmr_array.copy()
@@ -259,30 +265,33 @@ class TestCMMain(unittest.TestCase):
         # Test for case where we don't delete intermediate data
         self.scn_good = self.create_test_scene(self.good_bnd_names, self.good_angle_names)
         mock_cmr_func.return_value = self._make_mocked_cm_refl()
-        pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, mask_bad=False, do_brdf=False, delete_when_done=False)
+        with pytest.warns(UserWarning, match="Some solar zenith values out of range. Clipping."):
+            pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, mask_bad=False, do_brdf=False, delete_when_done=False)
         pcm.shared_wind = tmp_arr
         pcm.geometry = 'geotest'
         pcm.cm_refl.rhogl = True
         pcm._run_delete()
-        self.assertEqual(pcm.geometry, 'geotest')
-        self.assertEqual(pcm.cm_refl.rhogl, True)
+        assert pcm.geometry == 'geotest'
+        assert pcm.cm_refl.rhogl == True
         np.testing.assert_allclose(pcm.shared_wind, tmp_arr)
 
         # Test for case where we delete intermediate data
         self.scn_good = self.create_test_scene(self.good_bnd_names, self.good_angle_names)
         mock_cmr_func.return_value = self._make_mocked_cm_refl()
-        pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, mask_bad=False, do_brdf=False, delete_when_done=True)
+        with pytest.warns(UserWarning, match="Some solar zenith values out of range. Clipping."):
+            pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, mask_bad=False, do_brdf=False, delete_when_done=True)
         pcm.shared_wind = tmp_arr
         pcm.geometry = 'geotest'
         pcm._run_delete()
-        self.assertFalse(hasattr(pcm, 'geometry'))
-        self.assertFalse(hasattr(pcm.cm_refl, 'rhogl'))
-        self.assertFalse(hasattr(pcm, 'shared_wind'))
+        assert not hasattr(pcm, 'geometry')
+        assert not hasattr(pcm.cm_refl, 'rhogl')
+        assert not hasattr(pcm, 'shared_wind')
 
         # Test for case where we delete intermediate data with some missing
         self.scn_good = self.create_test_scene(self.good_bnd_names, self.good_angle_names)
         mock_cmr_func.return_value = self._make_mocked_cm_refl()
-        pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, mask_bad=False, do_brdf=False, delete_when_done=True)
+        with pytest.warns(UserWarning, match="Some solar zenith values out of range. Clipping."):
+            pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, mask_bad=False, do_brdf=False, delete_when_done=True)
         del pcm.shared_wind
         del pcm.geometry
         del pcm.cm_refl.rhogl

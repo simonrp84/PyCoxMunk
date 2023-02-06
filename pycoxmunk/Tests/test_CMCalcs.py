@@ -25,11 +25,10 @@ import pycoxmunk.CM_Calcs as CMCalcs
 from copy import deepcopy
 from unittest import mock
 import numpy as np
-import unittest
 
 
-class TestCMCalcs(unittest.TestCase):
-    def setUp(self):
+class TestCMCalcs:
+    def setup_method(self):
         """Set up some common variables for the tests."""
         self.sza = np.array([58.655, 167.412, 3.173, 63.215])
         self.vza = np.array([57.733, 21.248, 57.777, 99.768])
@@ -44,36 +43,46 @@ class TestCMCalcs(unittest.TestCase):
         self.watprops = deepcopy(CM_DATA_DICT[0.47])
         self.watprops.chlabs = 0.0109369
         self.watprops.chlbsc = 0.01805958
-        self.geom = CMSceneGeom(self.sza, self.saa, self.vza, self.vaa, self.lats, self.lons)
+        with pytest.warns(UserWarning, match="Some solar zenith values out of range. Clipping."):
+            self.geom = CMSceneGeom(self.sza, self.saa, self.vza, self.vaa, self.lats, self.lons)
         self.wind = CMSharedWind(self.geom, -5., 1.2)
 
     def test_cmrefl(self):
         """Test the CM_Reflectance class."""
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             CMCalcs.CMReflectance(cwvl='1.3')
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             CMCalcs.CMReflectance(cwvl=1)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             CMCalcs.CMReflectance(cwvl=[1., 2.])
 
         cmref = CMCalcs.CMReflectance(cwvl=1.3)
-        self.assertEqual(1.3, cmref.cwvl)
-        self.assertEqual(None, cmref.rhowc)
+        assert 1.3 == cmref.cwvl
+        assert cmref.rhowc is None
 
         cmref = CMCalcs.CMReflectance(cwvl=1.3, rho=1.54, rhowc=12.3)
-        self.assertEqual(1.54, cmref.rho)
-        self.assertEqual(12.3, cmref.rhowc)
+        assert 1.54 == cmref.rho
+        assert 12.3 == cmref.rhowc
 
     def test_compute_bands(self):
         """Test code that selects Cox-Munk bands."""
         blist = [0.22, 0.47, 0.65, 0.83, 1.4, 1.92, 2.56, 3.4, 4.1]
         ex_res = [(None, 0.47), (None, 0.47), (0.65, 0.87), (0.65, 0.87),
                   (1.375, 1.6), (1.6, 2.13), (2.13, 3.7), (2.13, 3.7), (3.7, None)]
-        for i in range(0, len(blist)):
-            self.assertEqual(CMCalcs._compute_bands_to_use(blist[i]), ex_res[i])
-        with self.assertRaises(ValueError):
+        with pytest.warns(UserWarning,
+                          match="Warning: Band wavelength 0.22 is less than PyCoxMunk minimum wavelength 0.47"):
+            assert CMCalcs._compute_bands_to_use(blist[0]), ex_res[0]
+        with pytest.warns(UserWarning,
+                          match="Warning: Band wavelength 0.47 is less than PyCoxMunk minimum wavelength 0.47"):
+            assert CMCalcs._compute_bands_to_use(blist[1]), ex_res[1]
+        for i in range(2, len(blist)-1):
+            assert CMCalcs._compute_bands_to_use(blist[i]), ex_res[i]
+        with pytest.warns(UserWarning,
+                          match="Warning: Band wavelength 4.1 is greater than PyCoxMunk maximum wavelength 3.7"):
+            assert CMCalcs._compute_bands_to_use(blist[-1]), ex_res[-1]
+        with pytest.raises(ValueError):
             CMCalcs._compute_bands_to_use(0.18)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             CMCalcs._compute_bands_to_use(5.18)
 
     def test_interp_frac(self):
@@ -84,12 +93,12 @@ class TestCMCalcs(unittest.TestCase):
         omins = [(1.0, 0.0), (0.9, 0.1), (0.6, 0.4), (0.3, 0.7), (0.05, 0.95)]
         for i in range(0, len(cw)):
             retr = CMCalcs._get_interp_frac(w1, w2, cw[i])
-            self.assertAlmostEqual(retr[0], omins[i][0])
-            self.assertAlmostEqual(retr[1], omins[i][1])
+            np.testing.assert_almost_equal(retr[0], omins[i][0])
+            np.testing.assert_almost_equal(retr[1], omins[i][1])
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             CMCalcs._get_interp_frac(1, 2, 0.5)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             CMCalcs._get_interp_frac(1, 2, 2.5)
 
     @mock.patch('pycoxmunk.CM_Calcs._compute_bands_to_use')
@@ -102,15 +111,15 @@ class TestCMCalcs(unittest.TestCase):
         band.return_value = band_mock
         interp.return_value = interp_mock
         # Check error is raised if bad interpolation method is requested
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             CMCalcs.compute_wavelength_specific_water_props(0.8, meth='random')
 
         # Check error is raised if no previous band is available
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             band.return_value = (None, 0.9)
             CMCalcs.compute_wavelength_specific_water_props(0.8, meth='prev')
         # Check error is raised if no next band is available
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             band.return_value = (0.9, None)
             CMCalcs.compute_wavelength_specific_water_props(0.8, meth='next')
 
@@ -126,17 +135,17 @@ class TestCMCalcs(unittest.TestCase):
         ret_wvl = 0.47
         band.return_value = (ret_wvl, None)
         ret_data = CMCalcs.compute_wavelength_specific_water_props(0.8, meth='prev')
-        self.assertTrue(type(ret_data) == WaterData)
-        self.assertEqual(ret_data.whitecap_refl, CM_DATA_DICT[ret_wvl].whitecap_refl)
-        self.assertEqual(ret_data.wavelength, CM_DATA_DICT[ret_wvl].wavelength)
+        assert type(ret_data) is WaterData
+        assert ret_data.whitecap_refl, CM_DATA_DICT[ret_wvl].whitecap_refl
+        assert ret_data.wavelength, CM_DATA_DICT[ret_wvl].wavelength
 
         # Check correct data is returned for next method.
         ret_wvl = 1.375
         band.return_value = (None, ret_wvl)
         ret_data = CMCalcs.compute_wavelength_specific_water_props(0.8, meth='next')
-        self.assertTrue(type(ret_data) == WaterData)
-        self.assertEqual(ret_data.whitecap_refl, CM_DATA_DICT[ret_wvl].whitecap_refl)
-        self.assertEqual(ret_data.wavelength, CM_DATA_DICT[ret_wvl].wavelength)
+        assert type(ret_data) is WaterData
+        assert ret_data.whitecap_refl, CM_DATA_DICT[ret_wvl].whitecap_refl
+        assert ret_data.wavelength, CM_DATA_DICT[ret_wvl].wavelength
 
         # Check interp works correctly
         frac1 = 0.3
@@ -146,18 +155,17 @@ class TestCMCalcs(unittest.TestCase):
         interp.return_value = (frac1, frac2)
         band.return_value = (band1, band2)
         ret_data = CMCalcs.compute_wavelength_specific_water_props(0.8, meth='interp')
-        self.assertEqual(ret_data.wavelength, 0.8)
-        self.assertEqual(ret_data.base_abs,
-                         CM_DATA_DICT[band1].base_abs * frac1 + CM_DATA_DICT[band2].base_abs * frac2)
-        self.assertEqual(ret_data.whitecap_refl,
-                         CM_DATA_DICT[band1].whitecap_refl * frac1 + CM_DATA_DICT[band2].whitecap_refl * frac2)
+        assert ret_data.wavelength == 0.8
+        assert ret_data.base_abs == CM_DATA_DICT[band1].base_abs * frac1 + CM_DATA_DICT[band2].base_abs * frac2
+        assert ret_data.whitecap_refl == (CM_DATA_DICT[band1].whitecap_refl * frac1
+               + CM_DATA_DICT[band2].whitecap_refl * frac2)
 
     def test_oceancolor(self):
         """Test the ocean color calculations. Functionality currently very basic in the main code."""
         from copy import deepcopy
 
         # Test we raise error if OC data is supplied, as we don't support it yet.
-        with self.assertRaises(NotImplementedError):
+        with pytest.raises(NotImplementedError):
             CMCalcs.run_oceancolor(None, 'a string')
 
         # Test that correct data is returned for chlorophyll.
@@ -193,15 +201,20 @@ class TestCMCalcs(unittest.TestCase):
         geom = CMSceneGeom(10., np.array([[165.2, 123.1, 22.6], [34, 21.2, 170.4], [0.45, 128.89, 44.22]]),
                            58.23, 9.3, 12., -120.,)
 
-        exp_dv = np.array([0.63585471, 0.63585471, 0.63585471])
-        exp_0d = np.array([4.78758539, 4.78758539, 4.78758539])
-        exp_dd = np.array([0.355864, 0.355864, 0.355864])
+        exp_dv = np.array([[1.702098, 1.673689, 1.715214],
+                           [1.706389, 1.715966, 1.707012],
+                           [1.714822, 1.675567, 1.696584]])
+        exp_0d = np.array([[2.389888, 2.282412, 2.424333],
+                           [2.401838, 2.426135, 2.403517],
+                           [2.423389, 2.29209 , 2.373374]])
+        exp_dd = np.array([[1.97325, 1.945448, 1.980272],
+                           [1.975696, 1.980641, 1.976037],
+                           [1.98008, 1.948862, 1.969804]])
         res = CMCalcs.calc_cox_munk_brdf_terms(self.refl, 0.8, geom, mock_wind, None)
         np.testing.assert_allclose(self.refl.rho, res.rho_0v)
-        print(f'{res.rho_dd}')
-        #np.testing.assert_allclose(exp_dd, res.rho_dd)
-        #np.testing.assert_allclose(exp_0d, res.rho_0d)
-        #np.testing.assert_allclose(exp_dv, res.rho_dv)
+        np.testing.assert_allclose(exp_dd, res.rho_dd, atol=1e-6)
+        np.testing.assert_allclose(exp_0d, res.rho_0d, atol=1e-6)
+        np.testing.assert_allclose(exp_dv, res.rho_dv, atol=1e-6)
 
     @mock.patch('pycoxmunk.CM_Calcs.compute_wavelength_specific_water_props')
     @mock.patch('pycoxmunk.CM_Calcs.run_oceancolor')
@@ -232,9 +245,9 @@ class TestCMCalcs(unittest.TestCase):
 
         # Case with no BRDF
         CMCalcs.calc_coxmunk_wrapper(None, None, None, None, False)
-        self.assertTrue(ccm.called)
-        self.assertFalse(ccm_brdf.called)
+        assert ccm.called
+        assert not ccm_brdf.called
         # Case with BRDF
         CMCalcs.calc_coxmunk_wrapper(None, None, None, None, True)
-        self.assertTrue(ccm.called)
-        self.assertTrue(ccm_brdf.called)
+        assert ccm.called
+        assert ccm_brdf.called
