@@ -163,11 +163,11 @@ class TestCMMain:
         """Test that winds are set up correctly."""
         mocker = mock.MagicMock()
         mocker.return_value = True
-        with pytest.warns(UserWarning, match="Some solar zenith values out of range. Clipping."):
-            with mock.patch('pycoxmunk.CM_Main.CMSharedWind', mocker):
+        with mock.patch('pycoxmunk.CM_Main.CMSharedWind', mocker):
+            with pytest.warns(UserWarning, match="Some solar zenith values out of range. Clipping."):
                 pcm = PyCoxMunk(self.scn_good, self.good_bnd_names)
-                pcm.setup_wind(13.4, -12.3)
-                assert pcm.shared_wind
+            pcm.setup_wind(13.4, -12.3)
+            assert pcm.shared_wind
 
     def _make_mocked_cm_refl(self):
         cmr_mocker = mock.MagicMock()
