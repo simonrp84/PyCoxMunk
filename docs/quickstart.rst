@@ -107,8 +107,9 @@ tuning dask to run on a standard desktop machine.
 In general, the user should set the maximum number of workers to be used by dask and the chunk size, as follows:
 
 .. code-block:: python
-import dask
-dask.config.set({'array.chunk-size': '32M', 'num_workers': 4})
+
+    import dask
+    dask.config.set({'array.chunk-size': '32M', 'num_workers': 4})
 
 Some experimentation may be necessary to find the best values for these, and the above work well to process SEVIRI data
 on a machine with 16Gb memory and 8 cores. For most processing, this may be unneeded as the `pycoxmunk` code is not

@@ -1,7 +1,7 @@
 .. _api_cmwind:
 
 The CM_Shared_Wind Module
-========================
+=========================
 
 The `CM_Shared_Wind` module defines the `CMSharedWind` class that is used py `pycoxmunk` for storing and computing
 data associated with wind speed and its effect upon sea surface reflectance. The `CMSharedWind` class contains numerous
@@ -80,7 +80,7 @@ The `calc_wind` function
 A helper function to calculate variables required by the `pycoxmunk` code that are not directly provided by the user.
 This function is called internally when the `CMSharedWind` class is initialised.
 Argument:
- - `scenegeom`: A `CMSceneGeom` type that contains the various satellite and solar geometry variables.
+- `scenegeom`: A `CMSceneGeom` type that contains the various satellite and solar geometry variables.
 
 Returns:
  - Nothing
