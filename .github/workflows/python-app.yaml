@@ -19,6 +19,8 @@ jobs:
       with:
         environment-file: .github/environment.yaml
         environment-name: test-environment
+        cache-downloads: True
+        cache-env: true
     - name: Lint with flake8
       shell: bash -l {0}
       run: |
