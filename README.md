@@ -36,6 +36,25 @@ It is also available from `conda-forge` for conda installations:
     conda install -c conda-forge pycoxmunk
 ```
 
+Tests
+-----
+
+pycoxmunk comes with a set of scripts for testing the functionality of the library. These are located in the `./Tests/`
+subdirectory and can be run using `pytest`:
+
+```
+
+cd Tests
+pytest .
+
+```
+
+This will run all tests. You can also run just a single test script with, for example, `pytest test_CMCalcs.py`.
+You may first need to install pytest via: `conda install pytest`.
+
+Once testing is complete, a summary will be displayed. This should indicate that all tests have passed, as well as
+potentially listing some warnings depending on your environment and the current status of `pycoxmunk`'s dependencies.
+
 Credits
 -------
 
@@ -60,6 +79,7 @@ It may help in debugging any problems to enable satpy's debug mode:
 This will print additional log and diagnostic information.
 
 Suggestions for new features are welcome, but may not always be possible for me to code due to limited time. You can
-also submit your own [pull requests](https://github.com/simonrp84/PyCoxMunk/pulls) that add features of fix bugs. This is the recommended way to change the library
-code, rather than emailing me your updates. By submitting a pull request your changes are documented and your 
-contribution to the code is clear.
+also submit your own [pull requests](https://github.com/simonrp84/PyCoxMunk/pulls) that add features of fix bugs. 
+This is the recommended way to change the library code, rather than emailing me your updates. 
+By submitting a pull request please ensure that your code changes and additions are documented and, where appropriate, 
+covered by tests.
