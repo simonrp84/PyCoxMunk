@@ -12,7 +12,7 @@ version = "1.0.0"
 description = "An algorithm to compute sea surface reflectance using the Cox-Munk approach."
 readme = "README.md"
 authors = [{ name = "Simon R Proud", email = "simon.proud@stfc.ac.uk" }]
-license = { file = "GPLv3" }
+license = { text = "GPLv3" }
 classifiers = [
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Programming Language :: Python",
@@ -36,9 +36,3 @@ requires-python = ">=3.8"
 
 [project.urls]
 Homepage = "https://github.com/simonrp84/PyCoxMunk"
-
-
-[tool.pytest.ini_options]
-filterwarnings = [
-    "ignore::RuntimeWarning",
-]
