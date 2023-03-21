@@ -38,8 +38,7 @@ class TestCMCalcs:
         self.lats = np.array([-5.247, -58.473, 17.666, 48.237])
         self.lons = np.array([-116.184, 73.047, 120.744, -121.522])
 
-        self.refl = CMCalcs.CMReflectance(cwvl=0.84,
-                                           rho=np.array([1., 10., 100.]))
+        self.refl = CMCalcs.CMReflectance(cwvl=0.84, rho=np.array([1., 10., 100.]))
         self.watprops = deepcopy(CM_DATA_DICT[0.47])
         self.watprops.chlabs = 0.0109369
         self.watprops.chlbsc = 0.01805958
@@ -75,7 +74,7 @@ class TestCMCalcs:
         with pytest.warns(UserWarning,
                           match="Warning: Band wavelength 0.47 is less than PyCoxMunk minimum wavelength 0.47"):
             assert CMCalcs._compute_bands_to_use(blist[1]), ex_res[1]
-        for i in range(2, len(blist)-1):
+        for i in range(2, len(blist) - 1):
             assert CMCalcs._compute_bands_to_use(blist[i]), ex_res[i]
         with pytest.warns(UserWarning,
                           match="Warning: Band wavelength 4.1 is greater than PyCoxMunk maximum wavelength 3.7"):
@@ -158,7 +157,7 @@ class TestCMCalcs:
         assert ret_data.wavelength == 0.8
         assert ret_data.base_abs == CM_DATA_DICT[band1].base_abs * frac1 + CM_DATA_DICT[band2].base_abs * frac2
         assert ret_data.whitecap_refl == (CM_DATA_DICT[band1].whitecap_refl * frac1
-               + CM_DATA_DICT[band2].whitecap_refl * frac2)
+                                          + CM_DATA_DICT[band2].whitecap_refl * frac2)
 
     def test_oceancolor(self):
         """Test the ocean color calculations. Functionality currently very basic in the main code."""
@@ -199,14 +198,14 @@ class TestCMCalcs:
         mock_wind.u10 = np.array([10.])
         mock_wind.v10 = np.array([-2.1])
         geom = CMSceneGeom(10., np.array([[165.2, 123.1, 22.6], [34, 21.2, 170.4], [0.45, 128.89, 44.22]]),
-                           58.23, 9.3, 12., -120.,)
+                           58.23, 9.3, 12., -120., )
 
         exp_dv = np.array([[1.702098, 1.673689, 1.715214],
                            [1.706389, 1.715966, 1.707012],
                            [1.714822, 1.675567, 1.696584]])
         exp_0d = np.array([[2.389888, 2.282412, 2.424333],
                            [2.401838, 2.426135, 2.403517],
-                           [2.423389, 2.29209 , 2.373374]])
+                           [2.423389, 2.29209, 2.373374]])
         exp_dd = np.array([[1.97325, 1.945448, 1.980272],
                            [1.975696, 1.980641, 1.976037],
                            [1.98008, 1.948862, 1.969804]])

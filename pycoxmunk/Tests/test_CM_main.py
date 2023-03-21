@@ -20,7 +20,6 @@ import pytest
 from pyresample import create_area_def
 from datetime import datetime
 from pycoxmunk.CM_Main import PyCoxMunk
-from pycoxmunk.CM_PixMask import CMPixMask
 from unittest import mock
 from satpy import Scene
 import dask.array as da
@@ -252,13 +251,9 @@ class TestCMMain:
         new_arr[5, 5] = np.nan
         np.testing.assert_allclose(pcm.scn[cm_band_name].data, new_arr)
 
-
     @mock.patch('pycoxmunk.CM_Main.calc_coxmunk_wrapper')
     def test_deleter(self, mock_cmr_func):
         """Test that deletions are done correctly."""
-
-        cm_band_name = f'cox_munk_refl_{self.good_bnd_names[0]}'
-        cm_rho0v_name = f'cox_munk_rho0v_{self.good_bnd_names[0]}'
 
         tmp_arr = np.array([1, 4., 64])
 
@@ -272,7 +267,7 @@ class TestCMMain:
         pcm.cm_refl.rhogl = True
         pcm._run_delete()
         assert pcm.geometry == 'geotest'
-        assert pcm.cm_refl.rhogl == True
+        assert pcm.cm_refl.rhogl
         np.testing.assert_allclose(pcm.shared_wind, tmp_arr)
 
         # Test for case where we delete intermediate data

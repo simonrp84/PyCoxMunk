@@ -57,6 +57,3 @@ class TestCMPixMask:
         main_mask = CMPixMask()
         main_mask.cut_high_zen(self.zens, threshold=70)
         np.testing.assert_allclose(main_mask.mask, self.test_zenmask2)
-
-
-

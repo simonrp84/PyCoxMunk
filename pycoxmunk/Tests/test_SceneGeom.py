@@ -92,7 +92,6 @@ class TestSceneGeom(unittest.TestCase):
             get_sun.side_effect = ValueError("Bad data")
             cm_calcangles(test_scn, 'VIS006')
 
-
     def test_shapechecker(self):
         """Tests for the shape checker that ensures arrays are same size."""
         # Default case
@@ -154,7 +153,7 @@ class TestSceneGeom(unittest.TestCase):
             Cm_sg(1., 1., test_cmsg.zenith_max + 15., 1., 1., 1.)
         with pytest.raises(ValueError):
             with pytest.warns(UserWarning, match="Some satellite zenith values out of range. Clipping."):
-             Cm_sg(1., 1., test_cmsg.zenith_max + 15., 1., 1., 1., fix_angs=False)
+                Cm_sg(1., 1., test_cmsg.zenith_max + 15., 1., 1., 1., fix_angs=False)
         Cm_sg(1., 1., test_cmsg.zenith_max - 10., 1., 1., 1.)
 
         # VAA

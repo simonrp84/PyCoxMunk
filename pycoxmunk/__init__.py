@@ -19,4 +19,4 @@
 
 """For instructions on using pycoxmunk please see the documentation under the pycoxmunk.PyCoxMunk class."""
 
-from pycoxmunk.CM_Main import PyCoxMunk
+from pycoxmunk.CM_Main import PyCoxMunk  # noqa

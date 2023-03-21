@@ -217,7 +217,6 @@ class PyCoxMunk:
             except (NameError, AttributeError):
                 pass
 
-
     def retr_coxmunk_refl(self):
         """Main function for computing the sea surface reflectance.
 

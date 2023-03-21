@@ -269,7 +269,6 @@ class CMSceneGeom:
             if self.raa.shape == () or self.raa.shape == (0,):
                 self.raa = float(self.raa)
 
-
     def calc_relazi(self):
         """Compute the relative azimuth angles from solar and viewing azimuths."""
         raa = da.abs(self.vaa - self.saa)
