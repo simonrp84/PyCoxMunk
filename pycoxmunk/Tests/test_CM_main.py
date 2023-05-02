@@ -56,10 +56,26 @@ class TestCMMain:
                                             'wavelength': wvl_mock,
                                             'orbital_parameters': orb_par})
 
-        for band in angle_names.keys():
-            scn[angle_names[band]] = xr.DataArray(da.from_array(np.zeros((10, 10))),
-                                                  coords={'y': np.zeros(10), 'x': np.zeros(10)},
-                                                  attrs={'start_time': datetime.utcnow()})
+        if 'sza' in angle_names.keys():
+            np.random.seed(1024)
+            scn['solar_zenith_angle'] = xr.DataArray(da.from_array(np.random.uniform(0., 90., (10, 10), )),
+                                                     coords={'y': np.zeros(10), 'x': np.zeros(10)},
+                                                     attrs={'start_time': datetime.utcnow()})
+        if 'saa' in angle_names.keys():
+            np.random.seed(2048)
+            scn['solar_azimuth_angle'] = xr.DataArray(da.from_array(np.random.uniform(0., 360., (10, 10), )),
+                                                      coords={'y': np.zeros(10), 'x': np.zeros(10)},
+                                                      attrs={'start_time': datetime.utcnow()})
+        if 'vza' in angle_names.keys():
+            np.random.seed(4096)
+            scn['satellite_zenith_angle'] = xr.DataArray(da.from_array(np.random.uniform(0., 90., (10, 10), )),
+                                                         coords={'y': np.zeros(10), 'x': np.zeros(10)},
+                                                         attrs={'start_time': datetime.utcnow()})
+        if 'vaa' in angle_names.keys():
+            np.random.seed(8192)
+            scn['satellite_azimuth_angle'] = xr.DataArray(da.from_array(np.random.uniform(0., 360., (10, 10), )),
+                                                          coords={'y': np.zeros(10), 'x': np.zeros(10)},
+                                                          attrs={'start_time': datetime.utcnow()})
         return scn
 
     def setup_method(self):
@@ -118,21 +134,24 @@ class TestCMMain:
             PyCoxMunk(self.scn_missing, self.good_bnd_names, angle_names=self.good_angle_names)
 
         # Good angle names
-        PyCoxMunk(self.scn_good, self.good_bnd_names, angle_names=self.good_angle_names)
+        with pytest.warns(UserWarning, match="Some solar zenith values out of range. Clipping."):
+            PyCoxMunk(self.scn_good, self.good_bnd_names, angle_names=self.good_angle_names)
 
     def test_ocean_color_init(self):
         """Test that ocean color options are parsed correctly."""
-        # Bad ocean color dir
+        # Bad ocean color dirf
         with pytest.raises(ValueError):
             PyCoxMunk(self.scn_good, self.good_bnd_names, angle_names=self.good_angle_names, oc_dir=1.0)
 
         # No ocean color dir
-        pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, angle_names=self.good_angle_names, oc_dir=None)
+        with pytest.warns(UserWarning, match="Some solar zenith values out of range. Clipping."):
+            pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, angle_names=self.good_angle_names, oc_dir=None)
         assert not pcm.use_occci
 
         # Good ocean color dir
         ocdir = '/media/test_oc_dir/'
-        pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, angle_names=self.good_angle_names, oc_dir=ocdir)
+        with pytest.warns(UserWarning, match="Some solar zenith values out of range. Clipping."):
+            pcm = PyCoxMunk(self.scn_good, self.good_bnd_names, angle_names=self.good_angle_names, oc_dir=ocdir)
         assert pcm.use_occci
         assert pcm.oc_dir == ocdir
 
@@ -148,7 +167,8 @@ class TestCMMain:
                     'satellite_azimuth_angle': np.array([10, 10])}
         mocker.return_value = tmp_dict
         with mock.patch('pycoxmunk.CM_Main.cm_calcangles', mocker):
-            PyCoxMunk(self.scn_good, self.good_bnd_names, angle_names='calc')
+            with pytest.warns(RuntimeWarning, match="invalid value encountered in double_scalars"):
+                PyCoxMunk(self.scn_good, self.good_bnd_names, angle_names='calc')
             mocker.assert_called()
 
     def test_misc(self):
