@@ -1,5 +1,4 @@
-
-#!/usr/bin/env python
+# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 # Copyright (c) 2020 Simon R Proud
 #
@@ -7,8 +6,7 @@
 #
 # PyCoxMunk is free software: you can redistribute it and/or modify it under the
 # terms of the GNU General Public License as published by the Free Software
-# Foundation, either version 3 of the License, or (at your option) any later
-# version.
+# Foundation, version 3.
 #
 # PyCoxMunk is distributed in the hope that it will be useful, but WITHOUT ANY
 # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
@@ -88,7 +86,7 @@ def gauss_leg_quadx(n, x1, x2):
     db = (x1 + x2) / 2.
     dc = (x2 - x1) / 2.
 
-    ii = int(da_ar.floor(n-1))
+    ii = int(da_ar.floor(n - 1))
     for i in range(0, int(da_ar.floor(nn))):
         y1, p2 = _gauss_leg_point(n, i, ia, ib, da)
 
@@ -99,7 +97,7 @@ def gauss_leg_quadx(n, x1, x2):
 
         de = n * p2
         de = 2 / (de * de)
-        w[i] = (dc - dd*y1) * de
+        w[i] = (dc - dd * y1) * de
 
         w[ii] = w[i]
 

@@ -49,6 +49,7 @@ used in SMACPy.
    quickstart
    pcm_api
    pcm_technical
+   pcm_tests
 
 
 

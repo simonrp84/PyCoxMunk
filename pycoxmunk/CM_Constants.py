@@ -6,8 +6,7 @@
 #
 # PyCoxMunk is free software: you can redistribute it and/or modify it under the
 # terms of the GNU General Public License as published by the Free Software
-# Foundation, either version 3 of the License, or (at your option) any later
-# version.
+# Foundation, version 3.
 #
 # PyCoxMunk is distributed in the hope that it will be useful, but WITHOUT ANY
 # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
@@ -39,22 +38,21 @@ n_quad_theta = 4
 n_quad_phi = 4
 
 
-
 class WaterData:
     """A class for data about water at a given wavelength."""
 
     def __init__(self,
-                 wavelength,       # Wavelength of given information
-                 refrac_real,      # Real part of refractive index
-                 refrac_imag,      # Imaginary part of refractive index
-                 base_abs,         # Base water absorption
-                 base_backscat,    # Base water backscatter coefficient
-                 whitecap_refl,    # Reflectance of whitecaps
-                 chl_a_coef,       # Chlorophyll-a absorption coefficient part
-                 total_abs,        # Total water absorption
-                 total_backscat,   # Total water backscatter
-                 chlabs=0,           # Chlorophyll-a absorption
-                 chlbsc=0):          # Chlorophyll-a backscatter
+                 wavelength,  # Wavelength of given information
+                 refrac_real,  # Real part of refractive index
+                 refrac_imag,  # Imaginary part of refractive index
+                 base_abs,  # Base water absorption
+                 base_backscat,  # Base water backscatter coefficient
+                 whitecap_refl,  # Reflectance of whitecaps
+                 chl_a_coef,  # Chlorophyll-a absorption coefficient part
+                 total_abs,  # Total water absorption
+                 total_backscat,  # Total water backscatter
+                 chlabs=0,  # Chlorophyll-a absorption
+                 chlbsc=0):  # Chlorophyll-a backscatter
 
         # Check the chl-a coefficients are a 2-element list
         if type(chl_a_coef) is not list:

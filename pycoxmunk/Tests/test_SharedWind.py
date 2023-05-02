@@ -6,8 +6,7 @@
 #
 # PyCoxMunk is free software: you can redistribute it and/or modify it under the
 # terms of the GNU General Public License as published by the Free Software
-# Foundation, either version 3 of the License, or (at your option) any later
-# version.
+# Foundation, version 3.
 #
 # PyCoxMunk is distributed in the hope that it will be useful, but WITHOUT ANY
 # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
@@ -60,4 +59,3 @@ class TestSharedWind:
         np.testing.assert_allclose(sh_wind.cosbeta, self.cosbeta, rtol=1e-5)
         np.testing.assert_allclose(sh_wind.w, self.w, rtol=1e-5)
         np.testing.assert_allclose(sh_wind.p, self.p, rtol=1e-5)
-
