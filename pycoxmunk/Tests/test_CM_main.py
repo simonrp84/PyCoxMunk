@@ -58,22 +58,22 @@ class TestCMMain:
 
         if 'sza' in angle_names.keys():
             np.random.seed(1024)
-            scn['solar_zenith_angle'] = xr.DataArray(da.from_array(np.random.uniform(0., 90., (10, 10), )),
+            scn['solar_zenith_angle'] = xr.DataArray(da.from_array(np.linspace(0, 89, 100).reshape((10, 10))),
                                                      coords={'y': np.zeros(10), 'x': np.zeros(10)},
                                                      attrs={'start_time': datetime.utcnow()})
         if 'saa' in angle_names.keys():
             np.random.seed(2048)
-            scn['solar_azimuth_angle'] = xr.DataArray(da.from_array(np.random.uniform(0., 360., (10, 10), )),
+            scn['solar_azimuth_angle'] = xr.DataArray(da.from_array(np.linspace(0, 360, 100).reshape((10, 10))),
                                                       coords={'y': np.zeros(10), 'x': np.zeros(10)},
                                                       attrs={'start_time': datetime.utcnow()})
         if 'vza' in angle_names.keys():
             np.random.seed(4096)
-            scn['satellite_zenith_angle'] = xr.DataArray(da.from_array(np.random.uniform(0., 90., (10, 10), )),
+            scn['satellite_zenith_angle'] = xr.DataArray(da.from_array(np.linspace(0, 89, 100).reshape((10, 10))),
                                                          coords={'y': np.zeros(10), 'x': np.zeros(10)},
                                                          attrs={'start_time': datetime.utcnow()})
         if 'vaa' in angle_names.keys():
             np.random.seed(8192)
-            scn['satellite_azimuth_angle'] = xr.DataArray(da.from_array(np.random.uniform(0., 360., (10, 10), )),
+            scn['satellite_azimuth_angle'] = xr.DataArray(da.from_array(np.linspace(0, 360, 100).reshape((10, 10))),
                                                           coords={'y': np.zeros(10), 'x': np.zeros(10)},
                                                           attrs={'start_time': datetime.utcnow()})
         return scn
@@ -167,7 +167,8 @@ class TestCMMain:
                     'satellite_azimuth_angle': np.array([10, 10])}
         mocker.return_value = tmp_dict
         with mock.patch('pycoxmunk.CM_Main.cm_calcangles', mocker):
-            with pytest.warns(RuntimeWarning, match="invalid value encountered in double_scalars"):
+            # Test a warning is raised, as we're passing some wind speeds of zero.
+            with pytest.warns(RuntimeWarning, match="invalid value encountered in scalar divide"):
                 PyCoxMunk(self.scn_good, self.good_bnd_names, angle_names='calc')
             mocker.assert_called()
 
