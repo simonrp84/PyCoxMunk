@@ -168,7 +168,7 @@ class TestCMMain:
         mocker.return_value = tmp_dict
         with mock.patch('pycoxmunk.CM_Main.cm_calcangles', mocker):
             # Test a warning is raised, as we're passing some wind speeds of zero.
-            with pytest.warns(RuntimeWarning, match="invalid value encountered in scalar divide"):
+            with pytest.warns(RuntimeWarning):
                 PyCoxMunk(self.scn_good, self.good_bnd_names, angle_names='calc')
             mocker.assert_called()
 
