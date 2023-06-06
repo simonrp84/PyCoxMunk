@@ -36,6 +36,12 @@ New users should refer to the `quickstart <./quickstart.html>`_ documentation, w
 `API documentation <./pcm_api.html>`_ and the `technical description <./pcm_technical.html>`_ of the correction method
 used in SMACPy.
 
+An example of _pycoxmunk_'s capabilities is shown below. This image shows
+`Meteosat Second Generation (MSG) / SEVIRI data <https://data.eumetsat.int/data/map/EO:EUM:DAT:MSG:HRSEVIRI>`_ over land
+and _pycoxmunk_ computed sea surface reflectance over water. It is produced by combining results from SEVIRI's
+0.6, 0.8 and 1.6 micron channels as an RGB composite. Wind data was retrieved from the
+`ERA5 archive <https://cds.climate.copernicus.eu/#!/home>`_.
+
 .. figure:: _img/CM_Overlay.jpg
    :class: with-border
 
