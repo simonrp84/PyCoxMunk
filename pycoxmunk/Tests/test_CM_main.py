@@ -51,7 +51,7 @@ class TestCMMain:
             wvl_mock.central = band
             scn[band] = xr.DataArray(da.from_array(np.zeros((10, 10))),
                                      coords={'y': np.zeros(10), 'x': np.zeros(10)},
-                                     attrs={'start_time': datetime.utcnow(),
+                                     attrs={'start_time': datetime(2022, 6, 15, 6, 20, 12),
                                             'area': targ_area,
                                             'wavelength': wvl_mock,
                                             'orbital_parameters': orb_par})
@@ -60,22 +60,22 @@ class TestCMMain:
             np.random.seed(1024)
             scn['solar_zenith_angle'] = xr.DataArray(da.from_array(np.linspace(0, 89, 100).reshape((10, 10))),
                                                      coords={'y': np.zeros(10), 'x': np.zeros(10)},
-                                                     attrs={'start_time': datetime.utcnow()})
+                                                     attrs={'start_time': datetime(2022, 6, 15, 6, 20, 12)})
         if 'saa' in angle_names.keys():
             np.random.seed(2048)
             scn['solar_azimuth_angle'] = xr.DataArray(da.from_array(np.linspace(0, 360, 100).reshape((10, 10))),
                                                       coords={'y': np.zeros(10), 'x': np.zeros(10)},
-                                                      attrs={'start_time': datetime.utcnow()})
+                                                      attrs={'start_time': datetime(2022, 6, 15, 6, 20, 12)})
         if 'vza' in angle_names.keys():
             np.random.seed(4096)
             scn['satellite_zenith_angle'] = xr.DataArray(da.from_array(np.linspace(0, 89, 100).reshape((10, 10))),
                                                          coords={'y': np.zeros(10), 'x': np.zeros(10)},
-                                                         attrs={'start_time': datetime.utcnow()})
+                                                         attrs={'start_time': datetime(2022, 6, 15, 6, 20, 12)})
         if 'vaa' in angle_names.keys():
             np.random.seed(8192)
             scn['satellite_azimuth_angle'] = xr.DataArray(da.from_array(np.linspace(0, 360, 100).reshape((10, 10))),
                                                           coords={'y': np.zeros(10), 'x': np.zeros(10)},
-                                                          attrs={'start_time': datetime.utcnow()})
+                                                          attrs={'start_time': datetime(2022, 6, 15, 6, 20, 12)})
         return scn
 
     def setup_method(self):
