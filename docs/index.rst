@@ -14,7 +14,7 @@ ____________________________________________________________
 `Cox-Munk method <https://doi.org/10.5194/amt-3-813-2010>`_. It is designed for use in areas of open water and may
 not provide accurate results in coastal regions, for rivers or for lakes. `pycoxmunk` is designed to be flexible,
 supporting a wide range of satellite sensors and allowing the inclusion of surface wind speeds to simulate the effects
-of white caps and other wind related wave effects
+of white caps and other wind related wave effects.
 
 A spectral database of water properties is included, allowing
 `pycoxmunk` to operate across the visible and near-infrared spectrum from approx. 450 to 3700nm. For wavelengths in the
@@ -34,7 +34,8 @@ reports via the issues tab on the GitHub page.
 
 New users should refer to the `quickstart <./quickstart.html>`_ documentation, while more advanced users can refer to the
 `API documentation <./pcm_api.html>`_ and the `technical description <./pcm_technical.html>`_ of the correction method
-used in SMACPy.
+used in SMACPy. A description of the algorithm and library are also given in 
+`this <https://joss.theoj.org/papers/10.21105/joss.05074.pdf>`_ paper published in the Journal of Open Source Software.
 
 An example of _pycoxmunk_'s capabilities is shown below. This image shows
 `Meteosat Second Generation (MSG) / SEVIRI data <https://data.eumetsat.int/data/map/EO:EUM:DAT:MSG:HRSEVIRI>`_ over land
