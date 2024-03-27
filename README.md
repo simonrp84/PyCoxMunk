@@ -9,7 +9,8 @@ PyCoxMunk
 
 The pycoxmunk library computes the sea surface reflectance, using the 
 [Cox-Munk method](https://doi.org/10.1364/JOSA.44.000838), as expected to be seen from space based on the satellite and 
-weather conditions at the sea surface.
+weather conditions at the sea surface. A description of the algorithm and this library are given in 
+[this paper](https://joss.theoj.org/papers/10.21105/joss.05074.pdf), published in the Journal of Open Source Software.
 
 The main purpose of this library is to enable an easy method for computing sea surface reflectance that is applicable
 to a wide variety of low-earth and geostationary orbit satellites and sensors. The library is closely linked to the 
