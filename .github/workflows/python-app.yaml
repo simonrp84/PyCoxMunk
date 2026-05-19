@@ -18,12 +18,13 @@ jobs:
     steps:
     - uses: actions/checkout@v6
     - name: provision-with-micromamba
-      uses: mamba-org/provision-with-micromamba@main
+      uses: mamba-org/setup-micromamba@v2
       with:
         environment-file: .github/environment.yaml
+        init-shell: bash
         environment-name: test-environment
-        cache-downloads: True
-        cache-env: true
+        cache-downloads: true
+        cache-environment: true
     - name: Lint with flake8
       shell: bash -l {0}
       run: |
