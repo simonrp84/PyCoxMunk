@@ -54,7 +54,7 @@ class TestSceneGeom(unittest.TestCase):
         self.assertAlmostEqual(geom.raa, 20.)
 
         # And likewise for arrays
-        with pytest.warns(UserWarning, match="Some solar zenith values out of range. Clipping."):
+        with pytest.warns(UserWarning, match="Some solar zenith values out of range"):
             geom = Cm_sg(self.sza, self.saa, self.vza,
                          self.vaa, self.lats, self.lons)
         np.testing.assert_allclose(geom.raa, self.raa)
@@ -94,20 +94,20 @@ class TestSceneGeom(unittest.TestCase):
     def test_shapechecker(self):
         """Tests for the shape checker that ensures arrays are same size."""
         # Default case
-        with pytest.warns(UserWarning, match="Some solar zenith values out of range. Clipping."):
+        with pytest.warns(UserWarning, match="Some solar zenith values out of range"):
             Cm_sg(self.sza, self.saa, self.vza,
                   self.vaa, self.lats, self.lons)
 
         # Mismatched arrays
         with pytest.raises(AssertionError):
-            with pytest.warns(UserWarning, match="Some solar zenith values out of range. Clipping."):
+            with pytest.warns(UserWarning, match="Some solar zenith values out of range"):
                 Cm_sg(self.sza, self.saa, self.vza,
                       self.vaa, np.array([1., 2.]), self.lons)
 
         # One array, rest scalar
         with mock.patch('pycoxmunk.CM_SceneGeom.CMSceneGeom.calc_relazi') as calc_func:
             calc_func.return_value = 1.
-            with pytest.warns(UserWarning, match="Some solar zenith values out of range. Clipping."):
+            with pytest.warns(UserWarning, match="Some solar zenith values out of range"):
                 retr = Cm_sg(self.sza, 5., 3., -10., 15., -21.)
             self.assertEqual(len(retr.sza), 4)
             self.assertEqual(retr.saa, 5.)
@@ -116,59 +116,57 @@ class TestSceneGeom(unittest.TestCase):
         """Ensure that bounds checks catch bad input data"""
         # SZA
         test_cmsg = Cm_sg(0., 0., 0., 0., 0., 0.)
-        with pytest.warns(UserWarning, match="Some solar zenith values out of range. Clipping."):
+        with pytest.warns(UserWarning, match="solar zenith values out of range"):
             Cm_sg(test_cmsg.zenith_min - 5, 1., 1., 1., 1., 1.)
         with pytest.raises(ValueError):
             Cm_sg(test_cmsg.zenith_min - 5, 1., 1., 1., 1., 1., fix_angs=False)
 
-        with pytest.warns(UserWarning, match="Some solar zenith values out of range. Clipping."):
+        with pytest.warns(UserWarning, match="solar zenith values out of range"):
             Cm_sg(test_cmsg.zenith_max + 100., 1., 1., 1., 1., 1.)
         with pytest.raises(ValueError):
             Cm_sg(test_cmsg.zenith_max + 100., 1., 1., 1., 1., 1., fix_angs=False)
         Cm_sg(test_cmsg.zenith_max - 10., 1., 1., 1., 1., 1.)
 
         # SAA
-        with pytest.warns(UserWarning, match="Some solar azimuth values out of range. Scaling."):
+        with pytest.warns(UserWarning, match="solar azimuth values out of range"):
             Cm_sg(1., test_cmsg.azimuth_min - 20., 1., 1., 1., 1.)
         with pytest.raises(ValueError):
             Cm_sg(1., test_cmsg.azimuth_min - 20., 1., 1., 1., 1., fix_angs=False)
         Cm_sg(1., test_cmsg.azimuth_min + 20., 1., 1., 1., 1.)
 
-        with pytest.warns(UserWarning, match="Some solar azimuth values out of range. Scaling."):
+        with pytest.warns(UserWarning, match="solar azimuth values out of range"):
             Cm_sg(1., test_cmsg.azimuth_max + 20., 1., 1., 1., 1.)
         with pytest.raises(ValueError):
             Cm_sg(1., test_cmsg.azimuth_max + 20., 1., 1., 1., 1., fix_angs=False)
         Cm_sg(1., test_cmsg.azimuth_max - 20., 1., 1., 1., 1.)
 
         # VZA
-        with pytest.warns(UserWarning, match="Some satellite zenith values out of range. Clipping."):
+        Cm_sg(1., 1., test_cmsg.zenith_max - 1., 1., 1., 1.)
+        Cm_sg(1., 1., test_cmsg.zenith_min + 1., 1., 1., 1.)
+
+        with pytest.warns(UserWarning, match="satellite zenith values out of range"):
             Cm_sg(1., 1., test_cmsg.zenith_min - 15., 1., 1., 1.)
         with pytest.raises(ValueError):
-            with pytest.warns(UserWarning, match="Some satellite zenith values out of range. Clipping."):
-                Cm_sg(1., 1., test_cmsg.zenith_min - 15., 1., 1., 1., fix_angs=False)
-        Cm_sg(1., 1., test_cmsg.zenith_min + 10., 1., 1., 1.)
+            Cm_sg(1., 1., test_cmsg.zenith_min - 15., 1., 1., 1., fix_angs=False)
 
-        with pytest.warns(UserWarning, match="Some satellite zenith values out of range. Clipping."):
+        with pytest.warns(UserWarning, match="satellite zenith values out of range"):
             Cm_sg(1., 1., test_cmsg.zenith_max + 15., 1., 1., 1.)
         with pytest.raises(ValueError):
-            with pytest.warns(UserWarning, match="Some satellite zenith values out of range. Clipping."):
-                Cm_sg(1., 1., test_cmsg.zenith_max + 15., 1., 1., 1., fix_angs=False)
-        Cm_sg(1., 1., test_cmsg.zenith_max - 10., 1., 1., 1.)
+            Cm_sg(1., 1., test_cmsg.zenith_max + 15., 1., 1., 1., fix_angs=False)
 
         # VAA
-        with pytest.warns(UserWarning, match="Some satellite azimuth values out of range. Scaling."):
+        Cm_sg(1., 1., 1., test_cmsg.azimuth_min + 1., 1., 1.)
+        Cm_sg(1., 1., 1., test_cmsg.azimuth_max - 1., 1., 1.)
+
+        with pytest.warns(UserWarning, match="satellite azimuth values out of range"):
             Cm_sg(1., 1., 1., test_cmsg.azimuth_min - 25., 1., 1.)
         with pytest.raises(ValueError):
-            with pytest.warns(UserWarning, match="Some satellite azimuth values out of range. Scaling."):
-                Cm_sg(1., 1., 1., test_cmsg.azimuth_min - 25., 1., 1., fix_angs=False)
-        Cm_sg(1., 1., 1., test_cmsg.azimuth_min + 1., 1., 1.)
+            Cm_sg(1., 1., 1., test_cmsg.azimuth_min - 25., 1., 1., fix_angs=False)
 
-        with pytest.warns(UserWarning, match="Some satellite azimuth values out of range. Scaling."):
+        with pytest.warns(UserWarning, match="satellite azimuth values out of range"):
             Cm_sg(1., 1., 1., test_cmsg.azimuth_max + 50., 1., 1.)
         with pytest.raises(ValueError):
-            with pytest.warns(UserWarning, match="Some satellite azimuth values out of range. Scaling."):
-                Cm_sg(1., 1., 1., test_cmsg.azimuth_max + 50., 1., 1., fix_angs=False)
-        Cm_sg(1., 1., 1., test_cmsg.azimuth_max - 1., 1., 1.)
+            Cm_sg(1., 1., 1., test_cmsg.azimuth_max + 50., 1., 1., fix_angs=False)
 
         # Lats
         with pytest.raises(ValueError):
