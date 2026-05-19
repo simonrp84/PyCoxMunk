@@ -29,7 +29,7 @@ jobs:
           environment-file: .github/environment.yaml
           environment-name: test-environment
           init-shell: bash
-          cache-downloads: true
+          cache-downloads: false
           cache-environment: true
           cache-environment-key: ubuntu-${{ matrix.python-version }}
 
