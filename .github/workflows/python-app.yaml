@@ -30,7 +30,7 @@ jobs:
           environment-name: test-environment
           init-shell: bash
           cache-downloads: false
-          cache-environment: true
+          cache-environment: false
           cache-environment-key: ubuntu-${{ matrix.python-version }}
 
       - name: Install Python ${{ matrix.python-version }}
