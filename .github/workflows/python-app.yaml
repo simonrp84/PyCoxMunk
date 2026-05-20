@@ -29,9 +29,6 @@ jobs:
           environment-file: .github/environment.yaml
           environment-name: test-environment
           init-shell: bash
-          cache-downloads: false
-          cache-environment: false
-          cache-environment-key: ubuntu-${{ matrix.python-version }}
 
       - name: Install Python ${{ matrix.python-version }}
         shell: bash -l {0}
